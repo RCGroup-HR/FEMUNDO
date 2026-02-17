@@ -1,0 +1,584 @@
+---
+export const prerender = false;
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import { query, queryOne } from '../../db/connection';
+
+const { slug } = Astro.params;
+
+let event: any = null;
+let pricing: any[] = [];
+let results: any[] = [];
+let galleryImages: any[] = [];
+
+try {
+  event = await queryOne('SELECT * FROM events WHERE slug = ?', [slug]);
+  if (event) {
+    pricing = await query('SELECT * FROM event_pricing WHERE event_id = ? AND is_active = TRUE ORDER BY display_order ASC', [event.id]) as any[];
+    results = await query('SELECT * FROM event_results WHERE event_id = ? ORDER BY category_es ASC, position ASC, display_order ASC', [event.id]) as any[];
+
+    // Check for gallery album linked to this event
+    const album = await queryOne('SELECT * FROM gallery_albums WHERE event_id = ? AND is_active = TRUE', [event.id]);
+    if (album) {
+      galleryImages = await query('SELECT * FROM gallery_images WHERE album_id = ? ORDER BY display_order ASC LIMIT 8', [(album as any).id]) as any[];
+    }
+  }
+} catch (e) {
+  console.error('Error loading event:', e);
+}
+
+if (!event) {
+  return Astro.redirect('/eventos');
+}
+
+function formatDate(date: any) {
+  if (!date) return '';
+  return new Date(date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatDateEn(date: any) {
+  if (!date) return '';
+  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// Group results by category
+const resultsByCategory: Record<string, any[]> = {};
+results.forEach((r: any) => {
+  const cat = r.category_es || 'General';
+  if (!resultsByCategory[cat]) resultsByCategory[cat] = [];
+  resultsByCategory[cat].push(r);
+});
+---
+
+<MainLayout title={`FEMUNDO - ${event.name_es}`} description={event.description_es || `Evento FEMUNDO: ${event.name_es}`}>
+  <Fragment slot="head">
+    <style>
+        .hero-evento-detalle {
+            background: var(--gradient);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-evento-detalle .hero-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+        }
+
+        .hero-evento-detalle .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-evento-detalle h1 {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .hero-evento-detalle .evento-meta-hero {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .hero-evento-detalle .evento-meta-hero span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evento-detalle-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: var(--secondary);
+        }
+
+        .evento-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .evento-main {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .evento-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+        }
+
+        .evento-section h2 {
+            font-family: 'Raleway', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .evento-section h2 i {
+            color: var(--secondary);
+        }
+
+        .evento-description-text {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        /* Sidebar */
+        .evento-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .evento-sidebar-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+        }
+
+        .evento-sidebar-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .evento-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .evento-info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .evento-info-item i {
+            color: var(--secondary);
+            width: 18px;
+            text-align: center;
+        }
+
+        .evento-cta-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            text-align: center;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .evento-cta-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .evento-cta-primary:hover {
+            background: #e07a00;
+            transform: translateY(-2px);
+        }
+
+        .evento-cta-secondary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .evento-cta-secondary:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Flyer */
+        .evento-flyer {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, #f8fafc, #e0f2fe);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.recommended {
+            border-color: var(--secondary);
+            position: relative;
+        }
+
+        .pricing-card.recommended::before {
+            content: 'Recomendado';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 2px 15px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pricing-name {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .pricing-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .pricing-price small {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .pricing-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .pricing-btn:hover {
+            background: var(--secondary);
+        }
+
+        /* Results */
+        .results-category {
+            margin-bottom: 20px;
+        }
+
+        .results-category h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th {
+            background: var(--primary);
+            color: white;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .results-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .results-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .position-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .pos-1 { background: #ffd700; color: #333; }
+        .pos-2 { background: #c0c0c0; color: #333; }
+        .pos-3 { background: #cd7f32; color: white; }
+
+        /* Gallery preview */
+        .gallery-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .gallery-preview-img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .gallery-preview-img:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-view-all {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-evento-detalle {
+                padding: 40px 15px;
+                min-height: 30vh;
+            }
+
+            .evento-content {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery-preview-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .evento-detalle-container {
+                padding: 25px 15px;
+            }
+
+            .hero-evento-detalle .evento-meta-hero {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+  </Fragment>
+
+    <!-- Hero -->
+    <section class="hero-evento-detalle">
+        {event.cover_image_url && <div class="hero-bg" style={`background-image: url('${event.cover_image_url}')`}></div>}
+        <div class="hero-content">
+            <h1 data-es={event.name_es} data-en={event.name_en || event.name_es}>{event.name_es}</h1>
+            <div class="evento-meta-hero">
+                {event.location && (
+                    <span><i class="fas fa-map-marker-alt"></i> {event.location}{event.country ? `, ${event.country}` : ''}</span>
+                )}
+                {event.start_date && (
+                    <span><i class="fas fa-calendar-alt"></i> <span data-es={formatDate(event.start_date)} data-en={formatDateEn(event.start_date)}>{formatDate(event.start_date)}</span></span>
+                )}
+            </div>
+        </div>
+    </section>
+
+    <div class="evento-detalle-container">
+        <a href="/eventos" class="back-link">
+            <i class="fas fa-arrow-left"></i> <span data-es="Volver a eventos" data-en="Back to events">Volver a eventos</span>
+        </a>
+
+        <div class="evento-content">
+            <!-- Main Content -->
+            <div class="evento-main">
+                <!-- Description -->
+                {event.description_es && (
+                    <div class="evento-section">
+                        <h2><i class="fas fa-info-circle"></i> <span data-es="Descripción" data-en="Description">Descripción</span></h2>
+                        <div class="evento-description-text" data-es={event.description_es} data-en={event.description_en || event.description_es}>
+                            {event.description_es}
+                        </div>
+                    </div>
+                )}
+
+                <!-- Pricing -->
+                {pricing.length > 0 && (
+                    <div class="evento-section">
+                        <h2><i class="fas fa-tags"></i> <span data-es="Planes de Inscripción" data-en="Registration Plans">Planes de Inscripción</span></h2>
+                        <div class="pricing-grid">
+                            {pricing.map((plan: any) => (
+                                <div class={`pricing-card ${plan.is_recommended ? 'recommended' : ''}`}>
+                                    <div class="pricing-name" data-es={plan.plan_name_es} data-en={plan.plan_name_en || plan.plan_name_es}>{plan.plan_name_es}</div>
+                                    <div class="pricing-price">${plan.price} <small>{plan.currency}</small></div>
+                                    {plan.stripe_link && (
+                                        <a href={plan.stripe_link} class="pricing-btn" target="_blank" rel="noopener" data-es="Inscribirse" data-en="Register">Inscribirse</a>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <!-- Results -->
+                {Object.keys(resultsByCategory).length > 0 && (
+                    <div class="evento-section">
+                        <h2><i class="fas fa-trophy"></i> <span data-es="Resultados" data-en="Results">Resultados</span></h2>
+                        {Object.entries(resultsByCategory).map(([category, catResults]) => (
+                            <div class="results-category">
+                                <h3>{category}</h3>
+                                <table class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-es="Pos." data-en="Pos.">Pos.</th>
+                                            <th data-es="Jugador/Equipo" data-en="Player/Team">Jugador/Equipo</th>
+                                            <th data-es="País" data-en="Country">País</th>
+                                            {(catResults as any[]).some((r: any) => r.prize) && <th data-es="Premio" data-en="Prize">Premio</th>}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(catResults as any[]).map((r: any) => (
+                                            <tr>
+                                                <td>
+                                                    <span class={`position-badge ${r.position <= 3 ? `pos-${r.position}` : ''}`}>
+                                                        {r.position}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <strong>{r.player_name || r.team_name}</strong>
+                                                    {r.player_name && r.team_name && <div style="font-size:0.8rem;color:#64748b">{r.team_name}</div>}
+                                                </td>
+                                                <td>{r.country_flag} {r.country}</td>
+                                                {(catResults as any[]).some((r: any) => r.prize) && <td>{r.prize || '-'}</td>}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <!-- Gallery Preview -->
+                {galleryImages.length > 0 && (
+                    <div class="evento-section">
+                        <h2><i class="fas fa-images"></i> <span data-es="Galería" data-en="Gallery">Galería</span></h2>
+                        <div class="gallery-preview-grid">
+                            {galleryImages.map((img: any) => (
+                                <img src={img.thumbnail_url || img.image_url} alt="" class="gallery-preview-img" loading="lazy" />
+                            ))}
+                        </div>
+                        {event.gallery_url && (
+                            <div class="gallery-view-all">
+                                <a href={event.gallery_url} class="evento-btn evento-btn-secondary" style="display:inline-flex">
+                                    <i class="fas fa-images"></i> <span data-es="Ver galería completa" data-en="View full gallery">Ver galería completa</span>
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="evento-sidebar">
+                <!-- Event Info -->
+                <div class="evento-sidebar-card">
+                    <h3 data-es="Información del Evento" data-en="Event Information">Información del Evento</h3>
+                    <div class="evento-info-list">
+                        {event.location && (
+                            <div class="evento-info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{event.location}</span>
+                            </div>
+                        )}
+                        {event.country && (
+                            <div class="evento-info-item">
+                                <i class="fas fa-globe"></i>
+                                <span>{event.country}</span>
+                            </div>
+                        )}
+                        {event.start_date && (
+                            <div class="evento-info-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span data-es={`${formatDate(event.start_date)} - ${formatDate(event.end_date)}`} data-en={`${formatDateEn(event.start_date)} - ${formatDateEn(event.end_date)}`}>{formatDate(event.start_date)} - {formatDate(event.end_date)}</span>
+                            </div>
+                        )}
+                        <div class="evento-info-item">
+                            <i class="fas fa-circle-info"></i>
+                            <span class={`evento-status status-${event.status}`} data-es={event.status === 'upcoming' ? 'Próximo' : event.status === 'active' ? 'En curso' : 'Completado'} data-en={event.status === 'upcoming' ? 'Upcoming' : event.status === 'active' ? 'Active' : 'Completed'}>
+                                {event.status === 'upcoming' ? 'Próximo' : event.status === 'active' ? 'En curso' : 'Completado'}
+                            </span>
+                        </div>
+                    </div>
+                    {event.registration_url && (
+                        <a href={event.registration_url} class="evento-cta-btn evento-cta-primary">
+                            <i class="fas fa-user-plus"></i> <span data-es="Inscribirse ahora" data-en="Register now">Inscribirse ahora</span>
+                        </a>
+                    )}
+                    {event.gallery_url && (
+                        <a href={event.gallery_url} class="evento-cta-btn evento-cta-secondary" style="margin-top:8px">
+                            <i class="fas fa-images"></i> <span data-es="Ver galería" data-en="View gallery">Ver galería</span>
+                        </a>
+                    )}
+                </div>
+
+                <!-- Flyer -->
+                {event.flyer_image_url && (
+                    <div class="evento-sidebar-card">
+                        <h3>Flyer</h3>
+                        <img src={event.flyer_image_url} alt={event.name_es} class="evento-flyer" loading="lazy" />
+                    </div>
+                )}
+            </div>
+        </div>
+    </div>
+</MainLayout>

@@ -1,0 +1,611 @@
+---
+export const prerender = false;
+import MainLayout from '../layouts/MainLayout.astro';
+
+// Obtener el evento desde la URL
+const url = new URL(Astro.request.url);
+const evento = url.searchParams.get('evento') || 'general';
+
+// Mapear nombres de eventos
+const eventNames: Record<string, string> = {
+  'barbados2025': 'Mundial Barbados 2025',
+  'colombia2025': 'Copa América 2025',
+  'panama2025': 'Copa de Naciones 2025',
+  'general': 'Evento FEMUNDO'
+};
+
+const eventName = eventNames[evento] || 'Evento FEMUNDO';
+---
+
+<MainLayout title={`Registro - ${eventName} | FEMUNDO`} description="Registro de participantes para eventos FEMUNDO">
+  <Fragment slot="head">
+    <style>
+        .registro-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .registro-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--gradient);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            color: white;
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .registro-container label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .required {
+            color: var(--secondary);
+        }
+
+        .registro-container input,
+        .registro-container select,
+        .registro-container textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .registro-container input:focus,
+        .registro-container select:focus,
+        .registro-container textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+
+        .registration-form {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(30, 58, 138, 0.1);
+            border-top: 5px solid var(--secondary);
+        }
+
+        .subscription-plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .plan-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.15);
+        }
+
+        .plan-card.selected {
+            border-color: var(--secondary);
+            background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .plan-card.selected::before {
+            transform: scaleX(1);
+        }
+
+        .plan-checkbox {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .plan-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .plan-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+
+        .plan-icon {
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .plan-features li {
+            padding: 0.3rem 0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-features li::before {
+            content: '\2713';
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .plan-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-align: center;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .plan-recommended {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--gradient);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transform: rotate(12deg);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 1rem;
+            font-family: inherit;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .event-info {
+            background: var(--gradient);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .event-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .success-message {
+            background: #10b981;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .warning-message {
+            background: #f59e0b;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .subscription-plans {
+                grid-template-columns: 1fr;
+            }
+
+            .registro-container {
+                padding: 1rem;
+            }
+
+            .registration-form {
+                padding: 2rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .registration-form {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+  </Fragment>
+
+    <div class="registro-container">
+        <a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span data-es="Volver al inicio" data-en="Back to home">Volver al inicio</span>
+        </a>
+
+        <div class="registro-header">
+            <h1 class="page-title" data-es="Registro de Participante" data-en="Participant Registration">Registro de Participante</h1>
+        </div>
+
+        <div class="event-info">
+            <h3><i class="fas fa-trophy"></i> {eventName}</h3>
+            <p data-es="Complete el formulario para registrarse en este evento de dominó" data-en="Complete the form to register for this domino event">Complete el formulario para registrarse en este evento de dominó</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            &#x2705; ¡Registro enviado correctamente! Nos pondremos en contacto pronto.
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            &#x274C; Error al enviar el registro. Por favor intente nuevamente.
+        </div>
+
+        <div class="warning-message" id="warningMessage">
+            &#x26A0;&#xFE0F; Por favor seleccione un plan de suscripción.
+        </div>
+
+        <form class="registration-form" name="registro-femundo" method="POST" data-netlify="true" id="registroForm">
+            <input type="hidden" name="form-name" value="registro-femundo">
+            <input type="hidden" name="evento" value={evento}>
+            <input type="hidden" name="evento-nombre" value={eventName}>
+
+            <!-- Información Personal -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-user"></i> <span data-es="Información Personal" data-en="Personal Information">Información Personal</span></h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nombre"><span data-es="Nombre" data-en="First Name">Nombre</span> <span class="required">*</span></label>
+                        <input type="text" id="nombre" name="nombre" required maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="apellido"><span data-es="Apellido" data-en="Last Name">Apellido</span> <span class="required">*</span></label>
+                        <input type="text" id="apellido" name="apellido" required maxlength="50">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="genero"><span data-es="Género" data-en="Gender">Género</span></label>
+                        <select id="genero" name="genero">
+                            <option value="">Seleccionar</option>
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                            <option value="otro">Otro</option>
+                            <option value="prefiero-no-decir">Prefiero no decir</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-envelope"></i> <span data-es="Información de Contacto" data-en="Contact Information">Información de Contacto</span></h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" required maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono"><span data-es="Teléfono" data-en="Phone">Teléfono</span> <span class="required">*</span></label>
+                        <input type="tel" id="telefono" name="telefono" required maxlength="20">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pais"><span data-es="País" data-en="Country">País</span> <span class="required">*</span></label>
+                    <select id="pais" name="pais" required>
+                        <option value="">Seleccionar país</option>
+                        <option value="AR">Argentina</option>
+                        <option value="BB">Barbados</option>
+                        <option value="BR">Brasil</option>
+                        <option value="CA">Canadá</option>
+                        <option value="CL">Chile</option>
+                        <option value="CO">Colombia</option>
+                        <option value="CR">Costa Rica</option>
+                        <option value="CU">Cuba</option>
+                        <option value="DO">República Dominicana</option>
+                        <option value="EC">Ecuador</option>
+                        <option value="ES">España</option>
+                        <option value="GT">Guatemala</option>
+                        <option value="HN">Honduras</option>
+                        <option value="MX">México</option>
+                        <option value="NI">Nicaragua</option>
+                        <option value="PA">Panamá</option>
+                        <option value="PE">Perú</option>
+                        <option value="PR">Puerto Rico</option>
+                        <option value="PY">Paraguay</option>
+                        <option value="SV">El Salvador</option>
+                        <option value="US">Estados Unidos</option>
+                        <option value="UY">Uruguay</option>
+                        <option value="VE">Venezuela</option>
+                        <option value="OTHER">Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Información de Dominó -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-gamepad"></i> <span data-es="Experiencia en Dominó" data-en="Domino Experience">Experiencia en Dominó</span></h3>
+
+                <div class="form-group">
+                    <label for="torneos_previos"><span data-es="¿Ha participado en torneos anteriores?" data-en="Have you participated in previous tournaments?">¿Ha participado en torneos anteriores?</span></label>
+                    <select id="torneos_previos" name="torneos_previos">
+                        <option value="">Seleccionar</option>
+                        <option value="si-femundo">Sí, en eventos FEMUNDO</option>
+                        <option value="si-otros">Sí, en otros torneos</option>
+                        <option value="no">No, es mi primer torneo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> <span data-es="Información Adicional" data-en="Additional Information">Información Adicional</span></h3>
+
+                <div class="form-group">
+                    <label for="modalidad_preferida"><span data-es="Modalidad Preferida" data-en="Preferred Modality">Modalidad Preferida</span></label>
+                    <select id="modalidad_preferida" name="modalidad_preferida">
+                        <option value="">Seleccionar</option>
+                        <option value="individual">Individual</option>
+                        <option value="parejas">Parejas</option>
+                        <option value="equipos">Equipos</option>
+                        <option value="todas">Todas las modalidades</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="fas fa-paper-plane"></i>
+                <span data-es="Registrarse y Proceder al Pago" data-en="Register and Proceed to Payment">Registrarse y Proceder al Pago</span>
+            </button>
+        </form>
+    </div>
+
+  <Fragment slot="scripts">
+    <script>
+        const form = document.getElementById('registroForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const warningMessage = document.getElementById('warningMessage');
+
+        const paymentUrls = {
+            'individual': 'https://buy.stripe.com/6oU6oG8h2eH75ic2kt38406',
+            'individual-comida': 'https://buy.stripe.com/aFa7sK9l6buV6mgaQZ3840a',
+            'parejas': 'https://buy.stripe.com/fZu9AS40M2YpbGA2kt38407',
+            'parejas-almuerzo': 'https://buy.stripe.com/eVqeVc68UcyZeSM3ox38408',
+            'completo-cena': 'https://buy.stripe.com/dRm4gyeFq0QheSM8IR38409',
+            'completo-total': 'https://buy.stripe.com/4gM14mbtefLbaCw0cl3840b'
+        };
+
+        const planCards = document.querySelectorAll('.plan-card');
+        const planRadios = document.querySelectorAll('input[name="plan_suscripcion"]');
+
+        planCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                planCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                warningMessage.style.display = 'none';
+            });
+        });
+
+        planRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                planCards.forEach(card => {
+                    if (card.dataset.plan === this.value) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+            });
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nombre = document.getElementById('nombre').value.trim();
+            const apellido = document.getElementById('apellido').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const pais = document.getElementById('pais').value;
+            const planSeleccionado = document.querySelector('input[name="plan_suscripcion"]:checked');
+
+            if (!nombre || !apellido || !email || !telefono || !pais) {
+                alert('Por favor complete todos los campos obligatorios (marcados con *)');
+                return;
+            }
+
+            if (!planSeleccionado) {
+                warningMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                warningMessage.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Por favor ingrese un email válido');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            const formData = new FormData(form);
+
+            fetch('/', {
+                method: 'POST',
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(formData).toString()
+            })
+            .then(response => {
+                if (response.ok) {
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    warningMessage.style.display = 'none';
+                    form.reset();
+
+                    const paymentUrl = paymentUrls[planSeleccionado.value];
+                    submitBtn.innerHTML = '<i class="fas fa-credit-card"></i> Redirigiendo al pago...';
+
+                    setTimeout(() => {
+                        window.location.href = paymentUrl;
+                    }, 1000);
+                } else {
+                    throw new Error('Error en el envío');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                successMessage.style.display = 'none';
+                warningMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Registrarse y Proceder al Pago';
+            });
+        });
+
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                warningMessage.style.display = 'none';
+            });
+        });
+    </script>
+  </Fragment>
+</MainLayout>

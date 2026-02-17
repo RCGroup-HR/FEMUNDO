@@ -1,0 +1,275 @@
+---
+export const prerender = false;
+
+import LanguageToggle from '../components/LanguageToggle.astro';
+import { query, queryOne } from '../db/connection';
+import '../styles/layout.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  bodyClass?: string;
+}
+
+const {
+  title = 'FEMUNDO - Federación Mundial de Dominó',
+  description = 'Sitio oficial de la Federación Mundial de Dominó. Información sobre torneos, eventos y competencias internacionales.',
+  ogImage = '',
+  bodyClass = ''
+} = Astro.props;
+
+// Cargar datos del layout desde la BD
+let navItems: any[] = [];
+let footerData: any[] = [];
+let contactData: any = {};
+let footerNavItems: any[] = [];
+
+try {
+  const results = await Promise.all([
+    query('SELECT * FROM navigation_items WHERE is_active = TRUE AND (location = ? OR location = ?) ORDER BY display_order ASC', ['header', 'both']),
+    query('SELECT * FROM footer_content WHERE is_active = TRUE ORDER BY display_order ASC'),
+    queryOne('SELECT * FROM contact_info LIMIT 1'),
+    query('SELECT * FROM navigation_items WHERE is_active = TRUE AND (location = ? OR location = ?) ORDER BY display_order ASC', ['footer', 'both']),
+  ]);
+  navItems = results[0] as any[] || [];
+  footerData = results[1] as any[] || [];
+  contactData = results[2] || {};
+  footerNavItems = results[3] as any[] || [];
+} catch (e) {
+  console.error('Error loading layout data:', e);
+}
+
+// Helper para buscar sección del footer por key
+const getFooterSection = (key: string) => (footerData as any[]).find((s: any) => s.section_key === key);
+const descSection = getFooterSection('description');
+const resourcesSection = getFooterSection('resources');
+const newsletterSection = getFooterSection('newsletter');
+const copyrightSection = getFooterSection('copyright');
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  <link rel="icon" href="/icono.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <slot name="head" />
+</head>
+<body class={bodyClass}>
+
+  <!-- HEADER DINÁMICO -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">
+        <img src="/icono.png" alt="Logo FEMUNDO" width="50" height="50" />
+        <span>FEMUNDO</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          {(navItems as any[]).map((item: any) => (
+            <li>
+              <a href={item.url}
+                 target={item.target || '_self'}
+                 data-es={item.label_es}
+                 data-en={item.label_en || item.label_es}>
+                {item.label_es}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div style="display: flex; align-items: center;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-language">
+          <LanguageToggle />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAV OVERLAY -->
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-content">
+      <div class="mobile-nav-header">
+        <a href="/" class="logo">
+          <img src="/icono.png" alt="FEMUNDO" width="35" height="35" />
+          <span>FEMUNDO</span>
+        </a>
+        <button class="mobile-nav-close" id="mobileNavClose">&times;</button>
+      </div>
+      <ul class="mobile-nav-links">
+        {(navItems as any[]).map((item: any) => (
+          <li>
+            <a href={item.url}
+               target={item.target || '_self'}
+               data-es={item.label_es}
+               data-en={item.label_en || item.label_es}>
+              {item.icon && <i class={item.icon} style="margin-right: 0.5rem;"></i>}
+              {item.label_es}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <slot />
+
+  <!-- FOOTER DINÁMICO -->
+  <footer>
+    <div class="footer-container">
+      <!-- Columna: Descripción FEMUNDO -->
+      {descSection && (
+        <div class="footer-column">
+          <h4>{descSection.title_es || 'FEMUNDO'}</h4>
+          <p data-es={descSection.content_es} data-en={descSection.content_en}>
+            {descSection.content_es}
+          </p>
+        </div>
+      )}
+
+      <!-- Columna: Enlaces rápidos -->
+      <div class="footer-column">
+        <h4 data-es="Enlaces rápidos" data-en="Quick Links">Enlaces rápidos</h4>
+        <ul class="footer-links">
+          {(footerNavItems as any[]).map((item: any) => (
+            <li>
+              <a href={item.url}
+                 target={item.target || '_self'}
+                 data-es={item.label_es}
+                 data-en={item.label_en || item.label_es}>
+                {item.label_es}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Columna: Recursos -->
+      {resourcesSection && (
+        <div class="footer-column">
+          <h4 data-es={resourcesSection.title_es} data-en={resourcesSection.title_en}>
+            {resourcesSection.title_es}
+          </h4>
+          <ul class="footer-links">
+            <li><a href="/reglamento" data-es="Reglas oficiales" data-en="Official Rules">Reglas oficiales</a></li>
+            <li><a href="/noticias" data-es="Noticias" data-en="News">Noticias</a></li>
+            <li><a href="/directiva" data-es="Directiva" data-en="Board">Directiva</a></li>
+          </ul>
+        </div>
+      )}
+
+      <!-- Columna: Newsletter -->
+      {newsletterSection && (
+        <div class="footer-column">
+          <h4 data-es={newsletterSection.title_es} data-en={newsletterSection.title_en}>
+            {newsletterSection.title_es}
+          </h4>
+          <p data-es={newsletterSection.content_es} data-en={newsletterSection.content_en}>
+            {newsletterSection.content_es}
+          </p>
+          <form style="margin-top: 1rem;">
+            <input type="email" class="footer-newsletter-input"
+                   placeholder="Tu correo electrónico"
+                   data-es="Tu correo electrónico" data-en="Your email address">
+            <button type="submit" class="footer-newsletter-btn"
+                    data-es="Suscribirse" data-en="Subscribe">
+              Suscribirse
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+
+    <!-- Social links -->
+    {contactData && (
+      <div class="social-links" style="justify-content: center; margin-top: 1rem;">
+        {(contactData as any).facebook_url && (
+          <a href={(contactData as any).facebook_url} class="social-icon" target="_blank" rel="noopener">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+        )}
+        {(contactData as any).instagram_url && (
+          <a href={(contactData as any).instagram_url} class="social-icon" target="_blank" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        )}
+        {(contactData as any).youtube_url && (
+          <a href={(contactData as any).youtube_url} class="social-icon" target="_blank" rel="noopener">
+            <i class="fab fa-youtube"></i>
+          </a>
+        )}
+        {(contactData as any).whatsapp && (
+          <a href={`https://wa.me/${(contactData as any).whatsapp.replace(/[^0-9]/g, '')}`} class="social-icon" target="_blank" rel="noopener">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+        )}
+      </div>
+    )}
+
+    <!-- Copyright -->
+    <div class="copyright">
+      {copyrightSection ? (
+        <p data-es={copyrightSection.content_es} data-en={copyrightSection.content_en}>
+          {copyrightSection.content_es}
+        </p>
+      ) : (
+        <p>&copy; {new Date().getFullYear()} FEMUNDO - Federación Mundial de Dominó. Todos los derechos reservados.</p>
+      )}
+    </div>
+  </footer>
+
+  <!-- Scripts globales -->
+  <script>
+    // Mobile menu toggle
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+      document.getElementById('mobileNav')?.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+
+    function closeMobileNav() {
+      document.getElementById('mobileNav')?.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('mobileNavClose')?.addEventListener('click', closeMobileNav);
+
+    document.getElementById('mobileNav')?.addEventListener('click', (e) => {
+      if (e.target === document.getElementById('mobileNav')) {
+        closeMobileNav();
+      }
+    });
+
+    // Close mobile nav on link click
+    document.querySelectorAll('.mobile-nav-links a').forEach(link => {
+      link.addEventListener('click', closeMobileNav);
+    });
+
+    // Smooth scrolling para anchors
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href && href.length > 1) {
+          const target = document.querySelector(href);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+  </script>
+
+  <!-- Slot para scripts adicionales de cada página -->
+  <slot name="scripts" />
+</body>
+</html>

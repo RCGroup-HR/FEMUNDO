@@ -1,0 +1,86 @@
+---
+// src/components/LanguageToggle.astro
+---
+
+<button id="language-toggle" class="language-toggle">
+  🇺🇸 English
+</button>
+
+<style>
+  .language-toggle {
+    background: linear-gradient(135deg, #1e3a8a 0%, #ff8c00 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2);
+  }
+  
+  .language-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+    opacity: 0.9;
+  }
+  
+  .language-toggle:active {
+    transform: translateY(0);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .language-toggle {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const button = document.getElementById('language-toggle');
+    let isEnglish = false;
+
+    // Cargar idioma guardado
+    const savedLang = localStorage.getItem('femundo-language');
+    if (savedLang === 'en') {
+      toggleLanguage();
+    }
+
+    button?.addEventListener('click', toggleLanguage);
+
+    function toggleLanguage() {
+      isEnglish = !isEnglish;
+      
+      // Cambiar texto del botón
+      button.textContent = isEnglish ? '🇪🇸 Español' : '🇺🇸 English';
+      
+      // Cambiar todo el contenido
+      document.querySelectorAll('[data-es][data-en]').forEach(element => {
+        const newText = isEnglish ? 
+          element.getAttribute('data-en') : 
+          element.getAttribute('data-es');
+        
+        if (element.tagName === 'INPUT' && element.type === 'email') {
+          element.placeholder = newText;
+        } else {
+          element.textContent = newText;
+        }
+      });
+      
+      // Guardar preferencia
+      localStorage.setItem('femundo-language', isEnglish ? 'en' : 'es');
+      
+      // Disparar evento personalizado para otros scripts
+      window.dispatchEvent(new CustomEvent('languageChanged', { 
+        detail: { language: isEnglish ? 'en' : 'es' } 
+      }));
+    }
+  });
+</script>

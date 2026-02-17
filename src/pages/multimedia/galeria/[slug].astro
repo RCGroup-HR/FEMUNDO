@@ -1,0 +1,393 @@
+---
+export const prerender = false;
+
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { query, queryOne } from '../../../db/connection';
+
+const { slug } = Astro.params;
+
+let album: any = null;
+let galleryImages: any[] = [];
+
+try {
+  album = await queryOne('SELECT * FROM gallery_albums WHERE slug = ? AND is_active = TRUE', [slug]);
+  if (album) {
+    const dbImages = await query('SELECT * FROM gallery_images WHERE album_id = ? ORDER BY display_order ASC', [(album as any).id]) as any[];
+    galleryImages = dbImages.map((img: any) => ({ src: img.image_url, thumb: img.thumbnail_url || img.image_url, caption: img.caption_es }));
+  }
+} catch (e) {
+  console.error('Error loading gallery:', e);
+}
+
+if (!album) {
+  return Astro.redirect('/multimedia');
+}
+
+const imagesJson = JSON.stringify(galleryImages);
+---
+
+<MainLayout title={`FEMUNDO - ${album.title_es}`} description={album.description_es || `Galería de fotos: ${album.title_es}`}>
+  <Fragment slot="head">
+    <style is:global>
+        .hero-gallery {
+            background: var(--gradient);
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gallery::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dominoes" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="15" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dominoes)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-gallery .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-gallery h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 1rem;
+            font-family: 'Raleway', sans-serif;
+            color: white;
+        }
+
+        .hero-gallery p { font-size: clamp(1rem, 2.5vw, 1.2rem); opacity: 0.9; }
+
+        .gallery-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+
+        .gallery-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .gallery-back:hover { color: var(--secondary); }
+
+        .gallery-stats {
+            background: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .image-counter {
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .counter-number {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--secondary);
+        }
+
+        .gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .image-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.2);
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+            background: #e2e8f0;
+        }
+
+        .thumbnail[src=""], .thumbnail:not([src]) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-card:hover .thumbnail { transform: scale(1.05); }
+
+        .image-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-card:hover .image-overlay { opacity: 0.9; }
+
+        .overlay-icon { color: white; font-size: 2rem; }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .lightbox.active { opacity: 1; }
+
+        .lightbox-content {
+            position: relative;
+            width: 90vw;
+            height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-image {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px; right: 0;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lightbox-close:hover { background: #ff4757; color: white; }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lightbox-nav:hover { background: var(--secondary); color: white; }
+        .lightbox-prev { left: -80px; }
+        .lightbox-next { right: -80px; }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .hero-gallery { padding: 2rem 1rem; }
+            .gallery-container { padding: 1rem; }
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .image-wrapper { height: 140px; }
+            .lightbox-nav { display: none; }
+            .gallery-nav { padding: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+            .image-wrapper { height: 120px; }
+        }
+    </style>
+  </Fragment>
+
+    <!-- Hero -->
+    <section class="hero-gallery">
+        <div class="hero-content">
+            <h1 data-es={album.title_es} data-en={album.title_en || album.title_es}>{album.title_es}</h1>
+            {album.description_es && (
+                <p data-es={album.description_es} data-en={album.description_en || album.description_es}>{album.description_es}</p>
+            )}
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <div class="gallery-nav">
+        <a href="/multimedia" class="gallery-back">
+            <i class="fas fa-arrow-left"></i> <span data-es="Volver a multimedia" data-en="Back to multimedia">Volver a multimedia</span>
+        </a>
+    </div>
+
+    <!-- Counter -->
+    <div class="gallery-stats">
+        <div class="image-counter">
+            <span class="counter-number" id="totalCount">0</span> <span data-es="imágenes en la galería" data-en="images in the gallery">imágenes en la galería</span>
+        </div>
+    </div>
+
+    <!-- Gallery -->
+    <div class="gallery-container">
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="closeBtn"><i class="fas fa-times"></i></button>
+            <button class="lightbox-nav lightbox-prev" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+            <img class="lightbox-image" id="lightboxImg" src="" alt="">
+            <button class="lightbox-nav lightbox-next" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+            <div class="lightbox-counter" id="lightboxCounter">1 de 1</div>
+        </div>
+    </div>
+
+    <div id="galleryData" data-images={imagesJson} style="display:none;"></div>
+
+  <Fragment slot="scripts">
+    <script>
+        const dataEl = document.getElementById('galleryData');
+        const GALLERY_IMAGES = dataEl ? JSON.parse(dataEl.dataset.images || '[]') : [];
+        let currentIndex = 0;
+
+        function createImageCard(image, index) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.style.animationDelay = `${Math.min(index * 0.05, 1)}s`;
+            const imgSrc = image.thumb || image.src || '';
+            card.innerHTML = `
+                <div class="image-wrapper">
+                    <img class="thumbnail" src="${imgSrc}" alt="Imagen ${index + 1}"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#e2e8f0\\'><i class=\\'fas fa-image\\' style=\\'font-size:2rem;color:#94a3b8\\'></i></div><div class=\\'image-overlay\\'><i class=\\'fas fa-search-plus overlay-icon\\'></i></div>';" loading="lazy">
+                    <div class="image-overlay">
+                        <i class="fas fa-search-plus overlay-icon"></i>
+                    </div>
+                </div>
+            `;
+            card.addEventListener('click', () => openLightbox(index));
+            return card;
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('galleryGrid');
+            const fragment = document.createDocumentFragment();
+            GALLERY_IMAGES.forEach((image, index) => {
+                fragment.appendChild(createImageCard(image, index));
+            });
+            container.appendChild(fragment);
+            document.getElementById('totalCount').textContent = GALLERY_IMAGES.length;
+        }
+
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightbox();
+            document.getElementById('lightbox').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('lightbox').classList.add('active'), 10);
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.remove('active');
+            setTimeout(() => { lb.style.display = 'none'; document.body.style.overflow = 'auto'; }, 300);
+        }
+
+        function nextImage() { currentIndex = (currentIndex + 1) % GALLERY_IMAGES.length; updateLightbox(); }
+        function prevImage() { currentIndex = (currentIndex - 1 + GALLERY_IMAGES.length) % GALLERY_IMAGES.length; updateLightbox(); }
+
+        function updateLightbox() {
+            const img = document.getElementById('lightboxImg');
+            img.src = GALLERY_IMAGES[currentIndex].src;
+            document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} de ${GALLERY_IMAGES.length}`;
+            img.onerror = () => { img.src = `https://via.placeholder.com/800x600/1e3a8a/ffffff?text=Imagen+${currentIndex + 1}`; };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGallery();
+            document.getElementById('closeBtn').addEventListener('click', closeLightbox);
+            document.getElementById('prevBtn').addEventListener('click', prevImage);
+            document.getElementById('nextBtn').addEventListener('click', nextImage);
+            document.getElementById('lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
+            document.addEventListener('keydown', (e) => {
+                if (document.getElementById('lightbox').classList.contains('active')) {
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowRight') nextImage();
+                    if (e.key === 'ArrowLeft') prevImage();
+                }
+            });
+            let startX = 0;
+            document.getElementById('lightboxImg').addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+            document.getElementById('lightboxImg').addEventListener('touchend', (e) => {
+                const diff = startX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 50) { diff > 0 ? nextImage() : prevImage(); }
+            });
+        });
+    </script>
+  </Fragment>
+</MainLayout>

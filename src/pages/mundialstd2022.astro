@@ -1,0 +1,482 @@
+---
+export const prerender = false;
+
+import MainLayout from '../layouts/MainLayout.astro';
+import { query } from '../db/connection';
+
+// Intentar cargar imágenes desde BD
+let galleryImages: any[] = [];
+let albumTitle = 'Mundial Santo Domingo 2022';
+let albumDesc = 'Galería oficial del Mundial de Dominó Santo Domingo 2022';
+
+try {
+  const dbImages = await query(
+    'SELECT gi.* FROM gallery_images gi JOIN gallery_albums ga ON gi.album_id = ga.id WHERE ga.slug = ? ORDER BY gi.display_order ASC',
+    ['santo-domingo-2022']
+  ) as any[];
+
+  if (dbImages && dbImages.length > 0) {
+    galleryImages = dbImages.map((img: any) => ({ src: img.image_url }));
+
+    const albums = await query('SELECT * FROM gallery_albums WHERE slug = ?', ['santo-domingo-2022']) as any[];
+    if (albums && albums.length > 0) {
+      albumTitle = albums[0].title_es || albumTitle;
+      albumDesc = albums[0].description_es || albumDesc;
+    }
+  }
+} catch (e) {
+  console.error('Error loading gallery from DB:', e);
+}
+
+// Fallback: imágenes hardcodeadas si no hay en BD
+if (galleryImages.length === 0) {
+  const imgs = [];
+  for (let i = 1; i <= 60; i++) {
+    imgs.push({ src: `/images/events/santodomingo2022/${i}.jpg` });
+  }
+  galleryImages = imgs;
+}
+
+const imagesJson = JSON.stringify(galleryImages);
+---
+
+<MainLayout title={`Galería FEMUNDO - ${albumTitle}`} description={albumDesc}>
+  <Fragment slot="head">
+    <style>
+        /* HERO */
+        .hero-gallery {
+            background: var(--gradient);
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gallery::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dominoes" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="15" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dominoes)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-gallery .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-gallery h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 1rem;
+            font-family: 'Raleway', sans-serif;
+            color: white;
+        }
+
+        .hero-gallery p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            opacity: 0.9;
+        }
+
+        /* CONTADOR DE IMÁGENES */
+        .gallery-stats {
+            background: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .image-counter {
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .counter-number {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--secondary);
+        }
+
+        /* GALERÍA OPTIMIZADA */
+        .gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* CARDS COMPACTAS */
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .image-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.2);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+            background: #f0f0f0;
+        }
+
+        .image-card:hover .thumbnail {
+            transform: scale(1.05);
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-card:hover .image-overlay {
+            opacity: 0.9;
+        }
+
+        .overlay-icon {
+            color: white;
+            font-size: 2rem;
+        }
+
+        /* LIGHTBOX */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            position: relative;
+            width: 90vw;
+            height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-image {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lightbox-close:hover {
+            background: #ff4757;
+            color: white;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lightbox-nav:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .lightbox-prev { left: -80px; }
+        .lightbox-next { right: -80px; }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-gallery {
+                padding: 2rem 1rem;
+            }
+
+            .gallery-container {
+                padding: 1rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .image-wrapper {
+                height: 140px;
+            }
+
+            .lightbox-nav {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 0.8rem;
+            }
+
+            .image-wrapper {
+                height: 120px;
+            }
+        }
+    </style>
+  </Fragment>
+
+    <!-- HERO -->
+    <section class="hero-gallery">
+        <div class="hero-content">
+            <h1 data-es={albumTitle} data-en={albumTitle}>{albumTitle}</h1>
+            <p data-es={albumDesc} data-en="Official gallery of the World Domino Championship Santo Domingo 2022">{albumDesc}</p>
+        </div>
+    </section>
+
+    <!-- CONTADOR -->
+    <div class="gallery-stats">
+        <div class="image-counter">
+            <span class="counter-number" id="totalCount">0</span> <span data-es="imágenes en la galería" data-en="images in the gallery">imágenes en la galería</span>
+        </div>
+    </div>
+
+    <!-- GALERÍA -->
+    <div class="gallery-container">
+        <div class="gallery-grid" id="galleryGrid">
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="closeBtn">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <button class="lightbox-nav lightbox-prev" id="prevBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <img class="lightbox-image" id="lightboxImg" src="" alt="">
+
+            <button class="lightbox-nav lightbox-next" id="nextBtn">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <div class="lightbox-counter" id="lightboxCounter">
+                1 de 1
+            </div>
+        </div>
+    </div>
+
+    <div id="galleryData" data-images={imagesJson} style="display:none;"></div>
+
+  <Fragment slot="scripts">
+    <script>
+        const dataEl = document.getElementById('galleryData');
+        const GALLERY_IMAGES = dataEl ? JSON.parse(dataEl.dataset.images || '[]') : [];
+
+        let currentIndex = 0;
+
+        function createImageCard(image, index) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.style.animationDelay = `${index * 0.1}s`;
+
+            card.innerHTML = `
+                <div class="image-wrapper">
+                    <img class="thumbnail"
+                         src="${image.src}"
+                         alt="Imagen ${index + 1}"
+                         onerror="this.src='https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Foto+${index + 1}'"
+                         loading="lazy">
+                    <div class="image-overlay">
+                        <i class="fas fa-search-plus overlay-icon"></i>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => openLightbox(index));
+            return card;
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('galleryGrid');
+            const fragment = document.createDocumentFragment();
+
+            GALLERY_IMAGES.forEach((image, index) => {
+                const card = createImageCard(image, index);
+                fragment.appendChild(card);
+            });
+
+            container.appendChild(fragment);
+            document.getElementById('totalCount').textContent = GALLERY_IMAGES.length;
+        }
+
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightbox();
+            document.getElementById('lightbox').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                document.getElementById('lightbox').classList.add('active');
+            }, 10);
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            setTimeout(() => {
+                lightbox.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % GALLERY_IMAGES.length;
+            updateLightbox();
+        }
+
+        function prevImage() {
+            currentIndex = (currentIndex - 1 + GALLERY_IMAGES.length) % GALLERY_IMAGES.length;
+            updateLightbox();
+        }
+
+        function updateLightbox() {
+            const img = document.getElementById('lightboxImg');
+            const counter = document.getElementById('lightboxCounter');
+
+            img.src = GALLERY_IMAGES[currentIndex].src;
+            counter.textContent = `${currentIndex + 1} de ${GALLERY_IMAGES.length}`;
+
+            img.onerror = () => {
+                img.src = `https://via.placeholder.com/800x600/1e3a8a/ffffff?text=Imagen+${currentIndex + 1}`;
+            };
+        }
+
+        function setupEvents() {
+            document.getElementById('closeBtn').addEventListener('click', closeLightbox);
+            document.getElementById('prevBtn').addEventListener('click', prevImage);
+            document.getElementById('nextBtn').addEventListener('click', nextImage);
+
+            document.getElementById('lightbox').addEventListener('click', (e) => {
+                if (e.target.id === 'lightbox') closeLightbox();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (document.getElementById('lightbox').classList.contains('active')) {
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowRight') nextImage();
+                    if (e.key === 'ArrowLeft') prevImage();
+                }
+            });
+
+            let startX = 0;
+            document.getElementById('lightboxImg').addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+
+            document.getElementById('lightboxImg').addEventListener('touchend', (e) => {
+                const endX = e.changedTouches[0].clientX;
+                const diff = startX - endX;
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) nextImage();
+                    else prevImage();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGallery();
+            setupEvents();
+        });
+    </script>
+  </Fragment>
+</MainLayout>

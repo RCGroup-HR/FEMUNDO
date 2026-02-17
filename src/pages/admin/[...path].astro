@@ -1,0 +1,53 @@
+---
+export const prerender = false;
+import AdminApp from '../../components/admin/AdminApp';
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEMUNDO Admin</title>
+    <link rel="icon" href="/icono.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #334155;
+        }
+        #admin-root {
+            min-height: 100vh;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Focus styles */
+        input:focus, textarea:focus, select:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        /* Button hover */
+        button:hover:not(:disabled) { opacity: 0.9; }
+        button:disabled { opacity: 0.6; cursor: not-allowed !important; }
+        /* Table rows hover */
+        tbody tr:hover { background: #f8fafc; }
+        /* Links in admin */
+        a:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <div id="admin-root">
+        <AdminApp client:only="react" />
+    </div>
+</body>
+</html>

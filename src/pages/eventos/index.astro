@@ -1,0 +1,527 @@
+---
+export const prerender = false;
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import { query } from '../../db/connection';
+
+let upcomingEvents: any[] = [];
+let pastEvents: any[] = [];
+
+try {
+  upcomingEvents = await query("SELECT * FROM events WHERE status IN ('upcoming', 'active') ORDER BY start_date ASC") as any[];
+  pastEvents = await query("SELECT * FROM events WHERE status = 'completed' ORDER BY start_date DESC") as any[];
+} catch (e) {
+  console.error('Error loading events:', e);
+}
+
+function formatDate(date: any) {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatDateEn(date: any) {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<MainLayout title="FEMUNDO - Eventos" description="Calendario completo de eventos, torneos y campeonatos mundiales de dominó organizados por FEMUNDO.">
+  <Fragment slot="head">
+    <style>
+        .hero-eventos {
+            background: var(--gradient);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 45vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-eventos .hero-content h1 {
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: white;
+        }
+
+        .hero-eventos .hero-content p {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            opacity: 0.95;
+        }
+
+        .eventos-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .eventos-section-title {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .eventos-section-title i {
+            color: var(--secondary);
+        }
+
+        .eventos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .evento-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .evento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15);
+        }
+
+        .evento-card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f1f5f9;
+        }
+
+        .evento-card-body {
+            padding: 25px;
+        }
+
+        .evento-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .status-upcoming {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-completed {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .evento-card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .evento-card-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .evento-card-title a:hover {
+            color: var(--secondary);
+        }
+
+        .evento-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .evento-meta-item {
+            font-size: 0.9rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evento-meta-item i {
+            color: var(--secondary);
+            width: 16px;
+            text-align: center;
+        }
+
+        .evento-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .evento-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .evento-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .evento-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .evento-btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .evento-btn-secondary {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .evento-btn-secondary:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .eventos-divider {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            margin: 40px 0;
+        }
+
+        .eventos-empty {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .eventos-empty i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .hero-eventos {
+                padding: 40px 15px;
+                min-height: 35vh;
+            }
+
+            .eventos-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .eventos-container {
+                padding: 25px 15px;
+            }
+        }
+
+        /* Events Carousel / Banner */
+        .events-carousel-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            padding: 30px 0;
+            margin-bottom: 10px;
+        }
+
+        .events-carousel-title {
+            text-align: center;
+            color: white;
+            font-family: 'Raleway', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .events-carousel-track {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding: 0 40px 15px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+
+        .events-carousel-track::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .events-carousel-track::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .events-carousel-track::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .events-carousel-slide {
+            flex: 0 0 auto;
+            width: 300px;
+            scroll-snap-align: start;
+            border-radius: 15px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .events-carousel-slide:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .events-carousel-slide img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .events-carousel-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .events-carousel-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .events-carousel-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .events-carousel-track {
+                padding: 0 20px 15px;
+            }
+            .events-carousel-slide {
+                width: 260px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .evento-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+  </Fragment>
+
+    <!-- Hero Section -->
+    <section class="hero-eventos">
+        <div class="hero-content">
+            <h1 data-es="Eventos FEMUNDO" data-en="FEMUNDO Events">Eventos FEMUNDO</h1>
+            <p data-es="Calendario completo de torneos, campeonatos y competencias internacionales de dominó" data-en="Complete calendar of domino tournaments, championships and international competitions">Calendario completo de torneos, campeonatos y competencias internacionales de dominó</p>
+        </div>
+    </section>
+
+    <!-- Upcoming Events Carousel Banner -->
+    {upcomingEvents.length > 0 && (
+        <section class="events-carousel-section">
+            <h3 class="events-carousel-title">
+                <i class="fas fa-star" style="color: #ff8c00; margin-right: 8px;"></i>
+                <span data-es="Eventos Destacados" data-en="Featured Events">Eventos Destacados</span>
+            </h3>
+            <div class="events-carousel-track">
+                {upcomingEvents.map((evt: any) => (
+                    <a href={`/eventos/${evt.slug}`} class="events-carousel-slide">
+                        {(evt.flyer_image_url || evt.cover_image_url) ? (
+                            <img src={evt.flyer_image_url || evt.cover_image_url} alt={evt.name_es} loading="lazy" />
+                        ) : (
+                            <div style="width:100%;height:200px;background:linear-gradient(135deg,#1e3a8a,#ff8c00);display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-trophy" style="font-size:3rem;color:rgba(255,255,255,0.3);"></i>
+                            </div>
+                        )}
+                        <div class="events-carousel-info">
+                            <h4 data-es={evt.name_es} data-en={evt.name_en || evt.name_es}>{evt.name_es}</h4>
+                            {evt.location && <p><i class="fas fa-map-marker-alt" style="margin-right:4px;color:#ff8c00;"></i>{evt.location}</p>}
+                            {evt.start_date && <p><i class="fas fa-calendar" style="margin-right:4px;color:#ff8c00;"></i><span data-es={formatDate(evt.start_date)} data-en={formatDateEn(evt.start_date)}>{formatDate(evt.start_date)}</span></p>}
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </section>
+    )}
+
+    <div class="eventos-container">
+        <!-- Upcoming Events -->
+        {upcomingEvents.length > 0 && (
+            <div>
+                <h2 class="eventos-section-title">
+                    <i class="fas fa-calendar-star"></i>
+                    <span data-es="Próximos Eventos" data-en="Upcoming Events">Próximos Eventos</span>
+                </h2>
+                <div class="eventos-grid">
+                    {upcomingEvents.map((evt: any) => (
+                        <div class="evento-card">
+                            {(evt.flyer_image_url || evt.cover_image_url) && (
+                                <img src={evt.flyer_image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                            )}
+                            <div class="evento-card-body">
+                                <span class={`evento-status status-${evt.status}`}>
+                                    {evt.status === 'upcoming' ? 'Próximo' : 'En curso'}
+                                </span>
+                                <h3 class="evento-card-title">
+                                    <a href={`/eventos/${evt.slug}`} data-es={evt.name_es} data-en={evt.name_en || evt.name_es}>{evt.name_es}</a>
+                                </h3>
+                                <div class="evento-meta">
+                                    {evt.location && (
+                                        <div class="evento-meta-item">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>{evt.location}{evt.country ? `, ${evt.country}` : ''}</span>
+                                        </div>
+                                    )}
+                                    {evt.start_date && (
+                                        <div class="evento-meta-item">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span data-es={formatDate(evt.start_date)} data-en={formatDateEn(evt.start_date)}>{formatDate(evt.start_date)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                {evt.description_es && (
+                                    <p class="evento-description" data-es={evt.description_es} data-en={evt.description_en || evt.description_es}>{evt.description_es}</p>
+                                )}
+                                <div class="evento-actions">
+                                    <a href={`/eventos/${evt.slug}`} class="evento-btn evento-btn-primary">
+                                        <i class="fas fa-info-circle"></i> <span data-es="Ver detalles" data-en="View details">Ver detalles</span>
+                                    </a>
+                                    {evt.registration_url && (
+                                        <a href={evt.registration_url} class="evento-btn evento-btn-secondary">
+                                            <i class="fas fa-user-plus"></i> <span data-es="Inscribirse" data-en="Register">Inscribirse</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {upcomingEvents.length > 0 && pastEvents.length > 0 && (
+            <hr class="eventos-divider" />
+        )}
+
+        <!-- Past Events -->
+        {pastEvents.length > 0 && (
+            <div>
+                <h2 class="eventos-section-title">
+                    <i class="fas fa-trophy"></i>
+                    <span data-es="Eventos Anteriores" data-en="Past Events">Eventos Anteriores</span>
+                </h2>
+                <div class="eventos-grid">
+                    {pastEvents.map((evt: any) => (
+                        <div class="evento-card">
+                            {(evt.cover_image_url || evt.flyer_image_url) && (
+                                <img src={evt.cover_image_url || evt.flyer_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                            )}
+                            <div class="evento-card-body">
+                                <span class="evento-status status-completed" data-es="Completado" data-en="Completed">Completado</span>
+                                <h3 class="evento-card-title">
+                                    <a href={`/eventos/${evt.slug}`} data-es={evt.name_es} data-en={evt.name_en || evt.name_es}>{evt.name_es}</a>
+                                </h3>
+                                <div class="evento-meta">
+                                    {evt.location && (
+                                        <div class="evento-meta-item">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>{evt.location}{evt.country ? `, ${evt.country}` : ''}</span>
+                                        </div>
+                                    )}
+                                    {evt.start_date && (
+                                        <div class="evento-meta-item">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span data-es={formatDate(evt.start_date)} data-en={formatDateEn(evt.start_date)}>{formatDate(evt.start_date)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                {evt.description_es && (
+                                    <p class="evento-description" data-es={evt.description_es} data-en={evt.description_en || evt.description_es}>{evt.description_es}</p>
+                                )}
+                                <div class="evento-actions">
+                                    <a href={`/eventos/${evt.slug}`} class="evento-btn evento-btn-primary">
+                                        <i class="fas fa-info-circle"></i> <span data-es="Ver detalles" data-en="View details">Ver detalles</span>
+                                    </a>
+                                    {evt.gallery_url && (
+                                        <a href={evt.gallery_url} class="evento-btn evento-btn-secondary">
+                                            <i class="fas fa-images"></i> <span data-es="Ver galería" data-en="View gallery">Ver galería</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {upcomingEvents.length === 0 && pastEvents.length === 0 && (
+            <div class="eventos-empty">
+                <i class="fas fa-calendar-xmark"></i>
+                <h3 data-es="No hay eventos disponibles" data-en="No events available">No hay eventos disponibles</h3>
+                <p data-es="Pronto publicaremos información sobre próximos eventos" data-en="We will soon publish information about upcoming events">Pronto publicaremos información sobre próximos eventos</p>
+            </div>
+        )}
+    </div>
+
+  <Fragment slot="scripts">
+    <script>
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.evento-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        }
+    </script>
+  </Fragment>
+</MainLayout>

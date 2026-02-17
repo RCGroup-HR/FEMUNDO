@@ -1,0 +1,724 @@
+---
+export const prerender = false;
+
+import MainLayout from '../layouts/MainLayout.astro';
+import { query } from '../db/connection';
+
+// Emoji flag → ISO code mapping for backward compat
+const EMOJI_TO_CODE: Record<string, string> = {
+  '🇦🇷': 'ar', '🇦🇼': 'aw', '🇧🇴': 'bo', '🇧🇷': 'br', '🇨🇱': 'cl',
+  '🇨🇴': 'co', '🇨🇷': 'cr', '🇨🇺': 'cu', '🇨🇼': 'cw', '🇪🇨': 'ec',
+  '🇸🇻': 'sv', '🇪🇸': 'es', '🇺🇸': 'us', '🇬🇹': 'gt', '🇭🇳': 'hn',
+  '🇮🇹': 'it', '🇯🇲': 'jm', '🇲🇽': 'mx', '🇳🇮': 'ni', '🇵🇦': 'pa',
+  '🇵🇾': 'py', '🇵🇪': 'pe', '🇵🇷': 'pr', '🇩🇴': 'do', '🇹🇹': 'tt',
+  '🇺🇾': 'uy', '🇻🇪': 've',
+};
+
+const COUNTRY_TO_CODE: Record<string, string> = {
+  'argentina': 'ar', 'aruba': 'aw', 'bolivia': 'bo', 'brasil': 'br',
+  'chile': 'cl', 'colombia': 'co', 'costa rica': 'cr', 'cuba': 'cu',
+  'curazao': 'cw', 'ecuador': 'ec', 'el salvador': 'sv', 'españa': 'es',
+  'estados unidos': 'us', 'guatemala': 'gt', 'honduras': 'hn',
+  'italia': 'it', 'jamaica': 'jm', 'méxico': 'mx', 'mexico': 'mx',
+  'nicaragua': 'ni', 'panamá': 'pa', 'panama': 'pa', 'paraguay': 'py',
+  'perú': 'pe', 'peru': 'pe', 'puerto rico': 'pr',
+  'república dominicana': 'do', 'trinidad y tobago': 'tt',
+  'uruguay': 'uy', 'venezuela': 've',
+};
+
+function resolveFlag(fed: any): string {
+  const f = fed.country_flag;
+  if (f && /^[a-z]{2}$/i.test(f.trim())) return f.trim().toLowerCase();
+  if (f && EMOJI_TO_CODE[f]) return EMOJI_TO_CODE[f];
+  const c = (fed.country || '').toLowerCase().trim();
+  return COUNTRY_TO_CODE[c] || '';
+}
+
+let federations: any[] = [];
+
+try {
+  federations = await query('SELECT * FROM federations WHERE is_active = TRUE ORDER BY display_order ASC') as any[];
+  // Normalize flags to ISO codes in-memory
+  federations = federations.map(fed => ({ ...fed, country_flag: resolveFlag(fed) }));
+} catch (e) {
+  console.error('Error loading federations:', e);
+}
+
+// Helper to get flag image URL from ISO code
+function getFlagUrl(code: string, width = 40): string {
+  if (!code) return '';
+  const c = code.trim().toLowerCase();
+  if (/^[a-z]{2}$/.test(c)) return `https://flagcdn.com/w${width}/${c}.png`;
+  return '';
+}
+---
+
+<MainLayout title="FEMUNDO - Federaciones Nacionales" description="Directorio de federaciones nacionales afiliadas a FEMUNDO. Conoce las organizaciones que representan el dominó en cada país.">
+  <Fragment slot="head">
+    <style>
+        .hero-federaciones {
+            background: var(--gradient);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 45vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-federaciones .hero-content h1 {
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: white;
+        }
+
+        .hero-federaciones .hero-content p {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .fed-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .fed-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 30px 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(30, 58, 138, 0.1);
+        }
+
+        .fed-stat {
+            text-align: center;
+        }
+
+        .fed-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .fed-stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .fed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .fed-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+            padding: 30px;
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--secondary);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .fed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15);
+        }
+
+        .fed-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .fed-flag {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .fed-flag-img {
+            width: 48px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .fed-flag-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 22px;
+            height: 16px;
+            object-fit: cover;
+            border-radius: 2px;
+            border: 1.5px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .fed-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #f8fafc;
+            padding: 4px;
+        }
+
+        .fed-card-title {
+            flex: 1;
+        }
+
+        .fed-card-title h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .fed-country {
+            display: inline-block;
+            background: var(--gradient);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .fed-president {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .fed-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .fed-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .fed-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .fed-link-web {
+            background: var(--primary);
+            color: white;
+        }
+
+        .fed-link-web:hover {
+            background: var(--primary-dark);
+        }
+
+        .fed-link-social {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .fed-link-social:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .fed-view-more {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .fed-empty {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            color: #94a3b8;
+        }
+
+        .fed-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .fed-empty h3 {
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Federation Detail Modal */
+        .fed-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(30, 58, 138, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+            padding: 20px;
+        }
+
+        .fed-modal-overlay.active {
+            display: flex;
+        }
+
+        .fed-modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 35px;
+            position: relative;
+            animation: fedModalIn 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        @keyframes fedModalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .fed-modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            transition: all 0.2s;
+        }
+
+        .fed-modal-close:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .fed-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .fed-modal-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: #f8fafc;
+            padding: 6px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .fed-modal-flag {
+            font-size: 4rem;
+            line-height: 1;
+        }
+
+        .fed-modal-flag-img {
+            width: 64px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .fed-modal-title h2 {
+            font-family: 'Raleway', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+        }
+
+        .fed-modal-country {
+            display: inline-block;
+            background: var(--gradient);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .fed-modal-section {
+            margin-bottom: 20px;
+        }
+
+        .fed-modal-section h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .fed-modal-info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .fed-modal-info-row i {
+            color: var(--secondary);
+            width: 20px;
+            text-align: center;
+        }
+
+        .fed-modal-description {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .fed-modal-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .fed-modal-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .fed-modal-link-web {
+            background: var(--primary);
+            color: white;
+        }
+
+        .fed-modal-link-web:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .fed-modal-link-social {
+            background: #f1f5f9;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .fed-modal-link-social:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-federaciones {
+                padding: 40px 15px;
+                min-height: 35vh;
+            }
+
+            .fed-stats {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .fed-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .fed-container {
+                padding: 25px 15px;
+            }
+
+            .fed-modal {
+                padding: 25px;
+                max-height: 85vh;
+            }
+
+            .fed-modal-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fed-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+  </Fragment>
+
+    <!-- Hero Section -->
+    <section class="hero-federaciones">
+        <div class="hero-content">
+            <h1 data-es="Federaciones Nacionales" data-en="National Federations">Federaciones Nacionales</h1>
+            <p data-es="Conoce las organizaciones que representan el dominó competitivo en cada país" data-en="Meet the organizations that represent competitive domino in each country">Conoce las organizaciones que representan el dominó competitivo en cada país</p>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <div class="fed-stats">
+        <div class="fed-stat">
+            <div class="fed-stat-number">{federations.length}</div>
+            <div class="fed-stat-label" data-es="Federaciones Afiliadas" data-en="Affiliated Federations">Federaciones Afiliadas</div>
+        </div>
+        <div class="fed-stat">
+            <div class="fed-stat-number">4</div>
+            <div class="fed-stat-label" data-es="Continentes" data-en="Continents">Continentes</div>
+        </div>
+    </div>
+
+    <!-- Federations Grid -->
+    <div class="fed-container">
+        {federations.length > 0 ? (
+            <div class="fed-grid">
+                {federations.map((fed: any, idx: number) => (
+                    <div class="fed-card" data-fed-idx={idx}>
+                        <div class="fed-card-header">
+                            {fed.logo_url ? (
+                                <div style="position:relative;">
+                                    <img src={fed.logo_url} alt={fed.name_es} class="fed-logo" />
+                                    {getFlagUrl(fed.country_flag) && (
+                                        <img src={getFlagUrl(fed.country_flag, 40)} alt={fed.country} class="fed-flag-badge" />
+                                    )}
+                                </div>
+                            ) : getFlagUrl(fed.country_flag) ? (
+                                <img src={getFlagUrl(fed.country_flag, 80)} alt={fed.country} class="fed-flag-img" />
+                            ) : (
+                                <span class="fed-flag">🌐</span>
+                            )}
+                            <div class="fed-card-title">
+                                <h3 data-es={fed.name_es} data-en={fed.name_en || fed.name_es}>{fed.name_es}</h3>
+                                <span class="fed-country">{fed.country}</span>
+                            </div>
+                        </div>
+                        {fed.president && (
+                            <p class="fed-president">
+                                <i class="fas fa-user-tie"></i> <span data-es={`Presidente: ${fed.president}`} data-en={`President: ${fed.president}`}>Presidente: {fed.president}</span>
+                            </p>
+                        )}
+                        {fed.description_es && (
+                            <p class="fed-description" data-es={fed.description_es} data-en={fed.description_en || fed.description_es}>{fed.description_es}</p>
+                        )}
+                        <div class="fed-links">
+                            {fed.website_url && (
+                                <a href={fed.website_url} class="fed-link fed-link-web" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                                    <i class="fas fa-globe"></i> Web
+                                </a>
+                            )}
+                            {fed.facebook_url && (
+                                <a href={fed.facebook_url} class="fed-link fed-link-social" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            )}
+                            {fed.instagram_url && (
+                                <a href={fed.instagram_url} class="fed-link fed-link-social" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            )}
+                        </div>
+                        <div class="fed-view-more">
+                            <i class="fas fa-info-circle"></i>
+                            <span data-es="Ver detalle" data-en="View details">Ver detalle</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <div class="fed-empty">
+                <i class="fas fa-globe-americas"></i>
+                <h3 data-es="Directorio no disponible" data-en="Directory not available">Directorio no disponible</h3>
+                <p data-es="Pronto publicaremos la información de las federaciones nacionales" data-en="We will soon publish national federations information">Pronto publicaremos la información de las federaciones nacionales</p>
+            </div>
+        )}
+    </div>
+
+    <!-- Federation Detail Modal -->
+    <div class="fed-modal-overlay" id="fedModal">
+        <div class="fed-modal" id="fedModalContent">
+            <button class="fed-modal-close" id="fedModalClose">&times;</button>
+            <div id="fedModalBody"></div>
+        </div>
+    </div>
+
+  <Fragment slot="scripts">
+    <script define:vars={{ federationsJson: JSON.stringify(federations) }}>
+        const federations = JSON.parse(federationsJson);
+        const modal = document.getElementById('fedModal');
+        const modalBody = document.getElementById('fedModalBody');
+        const modalClose = document.getElementById('fedModalClose');
+
+        // Open modal on card click
+        document.querySelectorAll('.fed-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const idx = parseInt(card.getAttribute('data-fed-idx') || '0');
+                const fed = federations[idx];
+                if (!fed) return;
+
+                const lang = localStorage.getItem('femundo-language') === 'true' ? 'en' : 'es';
+                const name = lang === 'en' ? (fed.name_en || fed.name_es) : fed.name_es;
+                const desc = lang === 'en' ? (fed.description_en || fed.description_es) : fed.description_es;
+                const presidentLabel = lang === 'en' ? 'President' : 'Presidente';
+
+                // Helper to get flag URL
+                function flagUrl(code, w) {
+                    if (!code) return '';
+                    const c = code.trim().toLowerCase();
+                    if (/^[a-z]{2}$/.test(c)) return 'https://flagcdn.com/w' + (w || 80) + '/' + c + '.png';
+                    return '';
+                }
+
+                let html = '<div class="fed-modal-header">';
+                if (fed.logo_url) {
+                    html += `<img src="${fed.logo_url}" alt="${name}" class="fed-modal-logo" />`;
+                }
+                const fUrl = flagUrl(fed.country_flag, 80);
+                if (fUrl) {
+                    html += `<img src="${fUrl}" alt="${fed.country || ''}" class="fed-modal-flag-img" />`;
+                } else {
+                    html += `<span class="fed-modal-flag">🌐</span>`;
+                }
+                html += `<div class="fed-modal-title"><h2>${name}</h2><span class="fed-modal-country">${fed.country || ''}</span></div>`;
+                html += '</div>';
+
+                if (fed.president) {
+                    html += '<div class="fed-modal-section">';
+                    html += `<div class="fed-modal-info-row"><i class="fas fa-user-tie"></i><strong>${presidentLabel}:</strong> ${fed.president}</div>`;
+                    html += '</div>';
+                }
+
+                if (fed.email) {
+                    html += `<div class="fed-modal-info-row"><i class="fas fa-envelope"></i>${fed.email}</div>`;
+                }
+
+                if (fed.phone) {
+                    html += `<div class="fed-modal-info-row"><i class="fas fa-phone"></i>${fed.phone}</div>`;
+                }
+
+                if (fed.address) {
+                    html += `<div class="fed-modal-info-row"><i class="fas fa-map-marker-alt"></i>${fed.address}</div>`;
+                }
+
+                if (desc) {
+                    html += '<div class="fed-modal-section">';
+                    html += `<h3>${lang === 'en' ? 'Description' : 'Descripción'}</h3>`;
+                    html += `<p class="fed-modal-description">${desc}</p>`;
+                    html += '</div>';
+                }
+
+                // Links
+                const hasLinks = fed.website_url || fed.facebook_url || fed.instagram_url;
+                if (hasLinks) {
+                    html += '<div class="fed-modal-links">';
+                    if (fed.website_url) {
+                        html += `<a href="${fed.website_url}" class="fed-modal-link fed-modal-link-web" target="_blank" rel="noopener"><i class="fas fa-globe"></i> ${lang === 'en' ? 'Website' : 'Sitio Web'}</a>`;
+                    }
+                    if (fed.facebook_url) {
+                        html += `<a href="${fed.facebook_url}" class="fed-modal-link fed-modal-link-social" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i> Facebook</a>`;
+                    }
+                    if (fed.instagram_url) {
+                        html += `<a href="${fed.instagram_url}" class="fed-modal-link fed-modal-link-social" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Instagram</a>`;
+                    }
+                    html += '</div>';
+                }
+
+                modalBody.innerHTML = html;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Close modal
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Animation on scroll
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.fed-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        }
+    </script>
+  </Fragment>
+</MainLayout>

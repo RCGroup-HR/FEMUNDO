@@ -1,0 +1,345 @@
+---
+export const prerender = false;
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import { query, queryOne } from '../../db/connection';
+
+let albums: any[] = [];
+let videoSection: any = null;
+
+try {
+  // Get all albums with image count
+  const rawAlbums = await query('SELECT ga.*, COUNT(gi.id) as image_count FROM gallery_albums ga LEFT JOIN gallery_images gi ON gi.album_id = ga.id WHERE ga.is_active = TRUE GROUP BY ga.id ORDER BY ga.display_order ASC') as any[];
+  albums = rawAlbums;
+
+  videoSection = await queryOne('SELECT * FROM video_section WHERE is_active = TRUE LIMIT 1');
+} catch (e) {
+  console.error('Error loading multimedia:', e);
+}
+
+// Extract YouTube embed URL
+function getYoutubeEmbedUrl(url: string) {
+  if (!url) return '';
+  if (url.includes('/embed/')) return url;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+
+// Use multimedia-specific video URL if available, otherwise fall back to main video
+const multimediaVideoUrl = videoSection?.multimedia_video_url || videoSection?.video_url;
+const videoEmbedUrl = multimediaVideoUrl ? getYoutubeEmbedUrl(multimediaVideoUrl) : '';
+---
+
+<MainLayout title="FEMUNDO - Multimedia" description="Galerías de fotos y videos de los eventos internacionales de dominó organizados por FEMUNDO.">
+  <Fragment slot="head">
+    <style>
+        .hero-multimedia {
+            background: var(--gradient);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 45vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-multimedia .hero-content h1 {
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: white;
+        }
+
+        .hero-multimedia .hero-content p {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            opacity: 0.95;
+        }
+
+        .multimedia-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .multimedia-section-title {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .multimedia-section-title i {
+            color: var(--secondary);
+        }
+
+        /* Gallery Albums Grid */
+        .albums-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .album-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .album-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.2);
+        }
+
+        .album-cover {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: #f1f5f9;
+            transition: transform 0.4s;
+        }
+
+        .album-card:hover .album-cover {
+            transform: scale(1.05);
+        }
+
+        .album-cover-wrapper {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .album-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .album-card:hover .album-overlay {
+            opacity: 0.85;
+        }
+
+        .album-overlay i {
+            color: white;
+            font-size: 2.5rem;
+        }
+
+        .album-body {
+            padding: 20px;
+        }
+
+        .album-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .album-desc {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .album-count {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .album-count i {
+            margin-right: 5px;
+        }
+
+        /* Video Section */
+        .video-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .multimedia-divider {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            margin: 40px 0;
+        }
+
+        .multimedia-empty {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            color: #94a3b8;
+        }
+
+        .multimedia-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .albums-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-multimedia {
+                padding: 40px 15px;
+                min-height: 35vh;
+            }
+
+            .albums-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .multimedia-container {
+                padding: 25px 15px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .album-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+  </Fragment>
+
+    <!-- Hero Section -->
+    <section class="hero-multimedia">
+        <div class="hero-content">
+            <h1 data-es="Multimedia" data-en="Multimedia">Multimedia</h1>
+            <p data-es="Revive los mejores momentos de nuestros eventos internacionales de dominó" data-en="Relive the best moments of our international domino events">Revive los mejores momentos de nuestros eventos internacionales de dominó</p>
+        </div>
+    </section>
+
+    <div class="multimedia-container">
+        <!-- Photo Galleries -->
+        {albums.length > 0 && (
+            <div>
+                <h2 class="multimedia-section-title">
+                    <i class="fas fa-images"></i>
+                    <span data-es="Galerías de Fotos" data-en="Photo Galleries">Galerías de Fotos</span>
+                </h2>
+                <div class="albums-grid">
+                    {albums.map((album: any) => (
+                        <a href={`/multimedia/galeria/${album.slug}`} class="album-card">
+                            <div class="album-cover-wrapper">
+                                {album.cover_image_url ? (
+                                    <img src={album.cover_image_url} alt={album.title_es} class="album-cover" loading="lazy" />
+                                ) : (
+                                    <div class="album-cover" style="display:flex;align-items:center;justify-content:center;background:#e2e8f0">
+                                        <i class="fas fa-images" style="font-size:3rem;color:#94a3b8"></i>
+                                    </div>
+                                )}
+                                <div class="album-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                </div>
+                            </div>
+                            <div class="album-body">
+                                <h3 class="album-title" data-es={album.title_es} data-en={album.title_en || album.title_es}>{album.title_es}</h3>
+                                {album.description_es && (
+                                    <p class="album-desc" data-es={album.description_es} data-en={album.description_en || album.description_es}>{album.description_es}</p>
+                                )}
+                                <span class="album-count">
+                                    <i class="fas fa-camera"></i> {album.image_count} <span data-es="fotos" data-en="photos">fotos</span>
+                                </span>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {albums.length > 0 && videoSection && (
+            <hr class="multimedia-divider" />
+        )}
+
+        <!-- Videos -->
+        {videoSection && (
+            <div>
+                <h2 class="multimedia-section-title">
+                    <i class="fas fa-video"></i>
+                    <span data-es="Videos" data-en="Videos">Videos</span>
+                </h2>
+                <div class="video-section">
+                    <div class="video-wrapper">
+                        <iframe
+                            src={`${videoEmbedUrl}?rel=0&modestbranding=1`}
+                            title={videoSection.title_es}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {albums.length === 0 && !videoSection && (
+            <div class="multimedia-empty">
+                <i class="fas fa-photo-film"></i>
+                <h3 data-es="Contenido multimedia no disponible" data-en="Multimedia content not available">Contenido multimedia no disponible</h3>
+                <p data-es="Pronto publicaremos galerías y videos de nuestros eventos" data-en="We will soon publish galleries and videos from our events">Pronto publicaremos galerías y videos de nuestros eventos</p>
+            </div>
+        )}
+    </div>
+
+  <Fragment slot="scripts">
+    <script>
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.album-card, .video-section').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        }
+    </script>
+  </Fragment>
+</MainLayout>

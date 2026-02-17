@@ -1,0 +1,181 @@
+---
+export const prerender = false;
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import { queryOne, execute } from '../../db/connection';
+
+const { slug } = Astro.params;
+const APP_URL = import.meta.env.APP_URL || `${Astro.url.protocol}//${Astro.url.host}`;
+
+let article: any = null;
+
+try {
+  article = await queryOne(
+    'SELECT * FROM articles WHERE slug = ? AND status = ?',
+    [slug, 'published']
+  );
+  // Incrementar vistas
+  if (article) {
+    await execute('UPDATE articles SET views_count = views_count + 1 WHERE id = ?', [(article as any).id]);
+  }
+} catch (e) {
+  console.error('Error fetching article:', e);
+}
+
+if (!article) {
+  return Astro.redirect('/noticias');
+}
+
+const pubDate = article.pub_date ? new Date(article.pub_date).toLocaleDateString('es-ES', {
+  year: 'numeric', month: 'long', day: 'numeric'
+}) : '';
+
+const pubDateEN = article.pub_date ? new Date(article.pub_date).toLocaleDateString('en-US', {
+  year: 'numeric', month: 'long', day: 'numeric'
+}) : '';
+---
+
+<MainLayout
+  title={`${article.title_es} - FEMUNDO`}
+  description={article.excerpt_es || article.title_es}
+  ogImage={article.hero_image_url || ''}
+>
+  <Fragment slot="head">
+    <meta property="og:title" content={article.title_es} />
+    <meta property="og:description" content={article.excerpt_es || ''} />
+    {article.hero_image_url && <meta property="og:image" content={article.hero_image_url} />}
+    <style>
+      .article-hero { width: 100%; max-height: 500px; object-fit: cover; display: block; }
+      .article-hero-gradient {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #ff8c00 100%);
+        height: 200px; display: flex; align-items: center; justify-content: center;
+      }
+      .article-hero-gradient i { font-size: 4rem; color: rgba(255,255,255,0.3); }
+      .article-container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+      .back-link {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        color: #1e3a8a; text-decoration: none; font-size: 0.9rem; font-weight: 500;
+        margin-bottom: 1.5rem; transition: opacity 0.2s;
+      }
+      .back-link:hover { opacity: 0.7; }
+      .article-category {
+        font-size: 0.8rem; font-weight: 600; color: #ff8c00;
+        text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;
+      }
+      .article-title {
+        font-family: 'Raleway', sans-serif;
+        font-size: 2.2rem; font-weight: 700; color: #1e293b;
+        line-height: 1.2; margin-bottom: 1rem;
+      }
+      .article-meta {
+        display: flex; align-items: center; gap: 1.5rem;
+        color: #94a3b8; font-size: 0.85rem; margin-bottom: 2rem;
+        padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0;
+      }
+      .article-meta i { margin-right: 0.35rem; }
+      .article-content { font-size: 1.05rem; line-height: 1.8; color: #334155; }
+      .article-content h2 { font-family: 'Raleway', sans-serif; font-size: 1.5rem; margin: 2rem 0 1rem; color: #1e293b; }
+      .article-content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; color: #1e293b; }
+      .article-content p { margin-bottom: 1.25rem; }
+      .article-content img {
+        max-width: 100%; height: auto; border-radius: 8px; margin: 1.5rem auto;
+        display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      .article-content ul, .article-content ol { margin: 1rem 0 1.25rem 1.5rem; }
+      .article-content li { margin-bottom: 0.5rem; }
+      .article-content blockquote {
+        border-left: 4px solid #ff8c00; padding: 1rem 1.5rem; margin: 1.5rem 0;
+        background: #fffbeb; font-style: italic; color: #92400e;
+      }
+      .article-content a { color: #1e3a8a; text-decoration: underline; }
+      .article-content strong, .article-content b { font-weight: 700; }
+      .article-content em, .article-content i:not([class]) { font-style: italic; }
+      .article-content u { text-decoration: underline; }
+      .article-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+      .article-content th, .article-content td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; }
+      .article-content th { background: #f8fafc; font-weight: 600; }
+      .share-section { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
+      .share-section h4 { font-size: 0.9rem; color: #64748b; margin-bottom: 0.75rem; }
+      .share-buttons { display: flex; gap: 0.5rem; }
+      .share-btn {
+        width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        color: white; text-decoration: none; font-size: 1rem; transition: transform 0.2s;
+      }
+      .share-btn:hover { transform: scale(1.1); }
+      .share-fb { background: #1877F2; }
+      .share-tw { background: #1DA1F2; }
+      .share-wa { background: #25D366; }
+      @media (max-width: 768px) {
+        .article-title { font-size: 1.6rem; }
+        .article-content { font-size: 1rem; }
+      }
+    </style>
+  </Fragment>
+
+  <!-- Hero Image -->
+  {article.hero_image_url ? (
+    <img src={article.hero_image_url} alt={article.title_es} class="article-hero" />
+  ) : (
+    <div class="article-hero-gradient"><i class="fas fa-newspaper"></i></div>
+  )}
+
+  <!-- Article -->
+  <div class="article-container">
+    <a href="/noticias" class="back-link">
+      <i class="fas fa-arrow-left"></i>
+      <span data-es="Volver a noticias" data-en="Back to news">Volver a noticias</span>
+    </a>
+
+    {article.category && <div class="article-category">{article.category}</div>}
+
+    <h1 class="article-title" data-es={article.title_es} data-en={article.title_en || article.title_es}>
+      {article.title_es}
+    </h1>
+
+    <div class="article-meta">
+      {pubDate && (
+        <span>
+          <i class="fas fa-calendar"></i>
+          <span data-es={pubDate} data-en={pubDateEN}>{pubDate}</span>
+        </span>
+      )}
+      <span><i class="fas fa-eye"></i> {article.views_count || 0} <span data-es="vistas" data-en="views">vistas</span></span>
+    </div>
+
+    <div class="article-content" id="articleContent"
+      data-content-es={article.content_es || ''}
+      data-content-en={article.content_en || article.content_es || ''}>
+      <Fragment set:html={article.content_es || '<p>Sin contenido</p>'} />
+    </div>
+
+    <!-- Share -->
+    <div class="share-section">
+      <h4 data-es="Compartir" data-en="Share">Compartir</h4>
+      <div class="share-buttons">
+        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_URL + '/noticias/' + article.slug)}`} target="_blank" rel="noopener" class="share-btn share-fb"><i class="fab fa-facebook-f"></i></a>
+        <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(APP_URL + '/noticias/' + article.slug)}&text=${encodeURIComponent(article.title_es)}`} target="_blank" rel="noopener" class="share-btn share-tw"><i class="fab fa-twitter"></i></a>
+        <a href={`https://wa.me/?text=${encodeURIComponent(article.title_es + ' ' + APP_URL + '/noticias/' + article.slug)}`} target="_blank" rel="noopener" class="share-btn share-wa"><i class="fab fa-whatsapp"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <Fragment slot="scripts">
+    <script>
+      // Handle bilingual article content
+      const content = document.getElementById('articleContent');
+      if (content) {
+        const lang = localStorage.getItem('femundo-language') === 'true' ? 'en' : 'es';
+        if (lang === 'en') {
+          const htmlEN = content.getAttribute('data-content-en');
+          if (htmlEN) content.innerHTML = htmlEN;
+        }
+        // Listen for language changes from LanguageToggle
+        window.addEventListener('languageChanged', ((e: CustomEvent) => {
+          const newLang = e.detail?.language === 'en' ? 'en' : 'es';
+          const html = content.getAttribute('data-content-' + newLang);
+          if (html) content.innerHTML = html;
+        }) as EventListener);
+      }
+    </script>
+  </Fragment>
+</MainLayout>
