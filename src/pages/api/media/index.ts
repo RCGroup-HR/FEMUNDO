@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-  params.push(limit, offset);
+  params.push(Number(limit), Number(offset));
 
   const [countResult] = await query<any>(countSql);
   const data = await query(sql, params);
