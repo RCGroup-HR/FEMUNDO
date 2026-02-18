@@ -181,9 +181,14 @@ export default function EventsManager() {
             </div>
 
             <h4 style={{ margin: '0.5rem 0 0', fontWeight: 600, fontSize: '0.9rem', color: '#475569' }}>Imágenes</h4>
+            <div style={{ background: '#eff6ff', borderRadius: 8, padding: '0.65rem 1rem', fontSize: '0.78rem', color: '#1e40af', border: '1px solid #bfdbfe' }}>
+              <i className="fas fa-info-circle" style={{ marginRight: '0.4rem' }} />
+              <strong>Flyer:</strong> Afiche del evento — sale en la tarjeta de la homepage y en el sidebar de la página del evento. &nbsp;|&nbsp;
+              <strong>Imagen de Fondo:</strong> Fondo del hero de la página del evento (ej. bandera del país anfitrión).
+            </div>
             <div style={S.grid}>
-              <ImageUploader label="Flyer" value={editing.flyer_image_url || editing.image_url} onChange={url => setEditing({ ...editing, flyer_image_url: url, image_url: url })} category="events" />
-              <ImageUploader label="Portada" value={editing.cover_image_url} onChange={url => setEditing({ ...editing, cover_image_url: url })} category="events" />
+              <ImageUploader label="Flyer (afiche del evento)" value={editing.flyer_image_url || editing.image_url} onChange={url => setEditing({ ...editing, flyer_image_url: url, image_url: url })} category="events" />
+              <ImageUploader label="Imagen de Fondo (hero del evento)" value={editing.cover_image_url} onChange={url => setEditing({ ...editing, cover_image_url: url })} category="events" />
             </div>
 
             <h4 style={{ margin: '0.5rem 0 0', fontWeight: 600, fontSize: '0.9rem', color: '#475569' }}>Enlaces</h4>
