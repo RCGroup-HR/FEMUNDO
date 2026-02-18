@@ -13,7 +13,7 @@ try {
   album = await queryOne('SELECT * FROM gallery_albums WHERE slug = ? AND is_active = TRUE', [slug]);
   if (album) {
     const dbImages = await query('SELECT * FROM gallery_images WHERE album_id = ? ORDER BY display_order ASC', [(album as any).id]) as any[];
-    galleryImages = dbImages.map((img: any) => ({ src: img.image_url, thumb: img.thumbnail_url || img.image_url, caption: img.caption_es }));
+    galleryImages = dbImages.map((img: any) => ({ src: img.image_url, thumb: img.image_url, caption: img.caption_es }));
   }
 } catch (e) {
   console.error('Error loading gallery:', e);
@@ -323,8 +323,8 @@ const imagesJson = JSON.stringify(galleryImages);
             const imgSrc = image.thumb || image.src || '';
             card.innerHTML = `
                 <div class="image-wrapper">
-                    <img class="thumbnail" src="${imgSrc}" alt="Imagen ${index + 1}"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#e2e8f0\\'><i class=\\'fas fa-image\\' style=\\'font-size:2rem;color:#94a3b8\\'></i></div><div class=\\'image-overlay\\'><i class=\\'fas fa-search-plus overlay-icon\\'></i></div>';" loading="lazy">
+                    <img class="thumbnail" src="${imgSrc}" alt="Imagen ${index + 1}" loading="lazy"
+                         onerror="this.onerror=null; this.src='${image.src || imgSrc}';">
                     <div class="image-overlay">
                         <i class="fas fa-search-plus overlay-icon"></i>
                     </div>
@@ -365,7 +365,7 @@ const imagesJson = JSON.stringify(galleryImages);
             const img = document.getElementById('lightboxImg');
             img.src = GALLERY_IMAGES[currentIndex].src;
             document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} de ${GALLERY_IMAGES.length}`;
-            img.onerror = () => { img.src = `https://via.placeholder.com/800x600/1e3a8a/ffffff?text=Imagen+${currentIndex + 1}`; };
+            img.onerror = null;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
