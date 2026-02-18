@@ -79,9 +79,9 @@ function formatDateEn(date: any) {
         }
 
         .eventos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             margin-bottom: 50px;
         }
 
@@ -92,22 +92,51 @@ function formatDateEn(date: any) {
             overflow: hidden;
             transition: all 0.3s ease;
             border-left: 4px solid var(--secondary);
+            display: flex;
+            flex-direction: row;
         }
 
         .evento-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15);
+        }
+
+        .evento-card-image-wrap {
+            flex: 0 0 260px;
+            width: 260px;
+            overflow: hidden;
+            background: #f1f5f9;
         }
 
         .evento-card-image {
             width: 100%;
-            height: 200px;
+            height: 100%;
             object-fit: cover;
-            background: #f1f5f9;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .evento-card:hover .evento-card-image {
+            transform: scale(1.04);
         }
 
         .evento-card-body {
-            padding: 25px;
+            padding: 22px 28px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @media (max-width: 640px) {
+            .evento-card {
+                flex-direction: column;
+            }
+            .evento-card-image-wrap {
+                flex: 0 0 200px;
+                width: 100%;
+                height: 200px;
+            }
         }
 
         .evento-status {
@@ -240,11 +269,6 @@ function formatDateEn(date: any) {
             .hero-eventos {
                 padding: 40px 15px;
                 min-height: 35vh;
-            }
-
-            .eventos-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
             }
 
             .eventos-container {
@@ -417,7 +441,9 @@ function formatDateEn(date: any) {
                     {upcomingEvents.map((evt: any) => (
                         <div class="evento-card">
                             {(evt.flyer_image_url || evt.image_url || evt.cover_image_url) && (
-                                <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                                <div class="evento-card-image-wrap">
+                                    <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                                </div>
                             )}
                             <div class="evento-card-body">
                                 <span class={`evento-status status-${evt.status}`}>
@@ -475,7 +501,9 @@ function formatDateEn(date: any) {
                     {pastEvents.map((evt: any) => (
                         <div class="evento-card">
                             {(evt.flyer_image_url || evt.image_url || evt.cover_image_url) && (
-                                <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                                <div class="evento-card-image-wrap">
+                                    <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                                </div>
                             )}
                             <div class="evento-card-body">
                                 <span class="evento-status status-completed" data-es="Completado" data-en="Completed">Completado</span>
