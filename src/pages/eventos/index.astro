@@ -266,12 +266,13 @@ function formatDateEn(date: any) {
             top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
-            filter: blur(3px) brightness(0.35);
+            filter: blur(3px) brightness(0.3);
             transform: scale(1.05);
             pointer-events: none;
+            z-index: 0;
         }
 
-        .events-carousel-section > * {
+        .events-carousel-section > *:not(.events-carousel-bg) {
             position: relative;
             z-index: 1;
         }
