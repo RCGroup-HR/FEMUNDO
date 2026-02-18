@@ -365,8 +365,8 @@ function formatDateEn(date: any) {
             <div class="events-carousel-track">
                 {upcomingEvents.map((evt: any) => (
                     <a href={`/eventos/${evt.slug}`} class="events-carousel-slide">
-                        {(evt.flyer_image_url || evt.cover_image_url) ? (
-                            <img src={evt.flyer_image_url || evt.cover_image_url} alt={evt.name_es} loading="lazy" />
+                        {(evt.flyer_image_url || evt.image_url || evt.cover_image_url) ? (
+                            <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} loading="lazy" />
                         ) : (
                             <div style="width:100%;height:200px;background:linear-gradient(135deg,#1e3a8a,#ff8c00);display:flex;align-items:center;justify-content:center;">
                                 <i class="fas fa-trophy" style="font-size:3rem;color:rgba(255,255,255,0.3);"></i>
@@ -394,8 +394,8 @@ function formatDateEn(date: any) {
                 <div class="eventos-grid">
                     {upcomingEvents.map((evt: any) => (
                         <div class="evento-card">
-                            {(evt.flyer_image_url || evt.cover_image_url) && (
-                                <img src={evt.flyer_image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                            {(evt.flyer_image_url || evt.image_url || evt.cover_image_url) && (
+                                <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
                             )}
                             <div class="evento-card-body">
                                 <span class={`evento-status status-${evt.status}`}>
@@ -452,8 +452,8 @@ function formatDateEn(date: any) {
                 <div class="eventos-grid">
                     {pastEvents.map((evt: any) => (
                         <div class="evento-card">
-                            {(evt.cover_image_url || evt.flyer_image_url) && (
-                                <img src={evt.cover_image_url || evt.flyer_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
+                            {(evt.flyer_image_url || evt.image_url || evt.cover_image_url) && (
+                                <img src={evt.flyer_image_url || evt.image_url || evt.cover_image_url} alt={evt.name_es} class="evento-card-image" loading="lazy" />
                             )}
                             <div class="evento-card-body">
                                 <span class="evento-status status-completed" data-es="Completado" data-en="Completed">Completado</span>
