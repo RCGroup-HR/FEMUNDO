@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useToast } from '../ui/Toast';
+import ImageUploader from '../ui/ImageUploader';
 
 export default function SettingsPage() {
   const { get, put } = useApi();
@@ -42,11 +43,21 @@ export default function SettingsPage() {
       <div style={S.card}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {settings.map(s => (
-            <div key={s.setting_key} style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1rem', alignItems: 'center' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>
-                {s.setting_key.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-              </label>
-              {s.setting_value && s.setting_value.length > 60 ? (
+            <div key={s.setting_key} style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1rem', alignItems: 'start' }}>
+              <div style={{ paddingTop: s.setting_type === 'image' ? '0.5rem' : '0.6rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', display: 'block' }}>
+                  {s.setting_key.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                </label>
+                {s.description_es && <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{s.description_es}</span>}
+              </div>
+              {s.setting_type === 'image' ? (
+                <ImageUploader
+                  label=""
+                  value={s.setting_value}
+                  onChange={url => update(s.setting_key, url)}
+                  category="settings"
+                />
+              ) : s.setting_value && s.setting_value.length > 60 ? (
                 <textarea value={s.setting_value} onChange={e => update(s.setting_key, e.target.value)} style={{ ...S.input, minHeight: '60px', resize: 'vertical' as const }} />
               ) : s.setting_key.includes('color') ? (
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

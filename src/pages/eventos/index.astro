@@ -2,14 +2,17 @@
 export const prerender = false;
 
 import MainLayout from '../../layouts/MainLayout.astro';
-import { query } from '../../db/connection';
+import { query, queryOne } from '../../db/connection';
 
 let upcomingEvents: any[] = [];
 let pastEvents: any[] = [];
+let carouselBg: string = '';
 
 try {
   upcomingEvents = await query("SELECT * FROM events WHERE status IN ('upcoming', 'active') ORDER BY start_date ASC") as any[];
   pastEvents = await query("SELECT * FROM events WHERE status = 'completed' ORDER BY start_date DESC") as any[];
+  const bgSetting = await queryOne("SELECT setting_value FROM site_settings WHERE setting_key = 'events_carousel_bg'") as any;
+  carouselBg = bgSetting?.setting_value || '';
 } catch (e) {
   console.error('Error loading events:', e);
 }
@@ -258,46 +261,19 @@ function formatDateEn(date: any) {
             overflow: hidden;
         }
 
+        .events-carousel-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(3px) brightness(0.35);
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+
         .events-carousel-section > * {
             position: relative;
             z-index: 1;
-        }
-
-        .domino-deco {
-            position: absolute;
-            opacity: 0.06;
-            pointer-events: none;
-        }
-        .domino-deco-1 {
-            width: 90px; height: 180px;
-            top: -20px; left: 5%;
-            transform: rotate(-20deg);
-            filter: blur(1px);
-        }
-        .domino-deco-2 {
-            width: 70px; height: 140px;
-            bottom: -15px; left: 18%;
-            transform: rotate(15deg);
-            filter: blur(1px);
-        }
-        .domino-deco-3 {
-            width: 100px; height: 200px;
-            top: -30px; right: 8%;
-            transform: rotate(25deg);
-            filter: blur(1px);
-        }
-        .domino-deco-4 {
-            width: 75px; height: 150px;
-            bottom: -20px; right: 20%;
-            transform: rotate(-10deg);
-            filter: blur(1px);
-        }
-        .domino-deco-5 {
-            width: 60px; height: 120px;
-            top: 10px; right: 35%;
-            transform: rotate(35deg);
-            filter: blur(2px);
-            opacity: 0.04;
         }
 
         .events-carousel-title {
@@ -402,48 +378,7 @@ function formatDateEn(date: any) {
     <!-- Upcoming Events Carousel Banner -->
     {upcomingEvents.length > 0 && (
         <section class="events-carousel-section">
-            <!-- Fichas de dominó decorativas -->
-            <svg class="domino-deco domino-deco-1" viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="60" height="120" rx="8" fill="white"/>
-                <line x1="0" y1="60" x2="60" y2="60" stroke="white" stroke-width="2"/>
-                <circle cx="15" cy="30" r="5" fill="white"/>
-                <circle cx="45" cy="30" r="5" fill="white"/>
-                <circle cx="30" cy="90" r="5" fill="white"/>
-            </svg>
-            <svg class="domino-deco domino-deco-2" viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="60" height="120" rx="8" fill="white"/>
-                <line x1="0" y1="60" x2="60" y2="60" stroke="white" stroke-width="2"/>
-                <circle cx="30" cy="30" r="5" fill="white"/>
-                <circle cx="15" cy="75" r="5" fill="white"/>
-                <circle cx="45" cy="75" r="5" fill="white"/>
-                <circle cx="15" cy="105" r="5" fill="white"/>
-                <circle cx="45" cy="105" r="5" fill="white"/>
-            </svg>
-            <svg class="domino-deco domino-deco-3" viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="60" height="120" rx="8" fill="white"/>
-                <line x1="0" y1="60" x2="60" y2="60" stroke="white" stroke-width="2"/>
-                <circle cx="15" cy="20" r="5" fill="white"/>
-                <circle cx="45" cy="20" r="5" fill="white"/>
-                <circle cx="15" cy="40" r="5" fill="white"/>
-                <circle cx="45" cy="40" r="5" fill="white"/>
-                <circle cx="30" cy="90" r="5" fill="white"/>
-            </svg>
-            <svg class="domino-deco domino-deco-4" viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="60" height="120" rx="8" fill="white"/>
-                <line x1="0" y1="60" x2="60" y2="60" stroke="white" stroke-width="2"/>
-                <circle cx="15" cy="30" r="5" fill="white"/>
-                <circle cx="45" cy="30" r="5" fill="white"/>
-                <circle cx="15" cy="80" r="5" fill="white"/>
-                <circle cx="45" cy="80" r="5" fill="white"/>
-                <circle cx="30" cy="105" r="5" fill="white"/>
-            </svg>
-            <svg class="domino-deco domino-deco-5" viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="60" height="120" rx="8" fill="white"/>
-                <line x1="0" y1="60" x2="60" y2="60" stroke="white" stroke-width="2"/>
-                <circle cx="30" cy="30" r="5" fill="white"/>
-                <circle cx="15" cy="75" r="5" fill="white"/>
-                <circle cx="45" cy="105" r="5" fill="white"/>
-            </svg>
+            {carouselBg && <div class="events-carousel-bg" style={`background-image: url('${carouselBg}')`}></div>}
             <h3 class="events-carousel-title">
                 <i class="fas fa-star" style="color: #ff8c00; margin-right: 8px;"></i>
                 <span data-es="Eventos Destacados" data-en="Featured Events">Eventos Destacados</span>
