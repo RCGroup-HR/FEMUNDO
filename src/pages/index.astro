@@ -201,7 +201,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   align-items: center;
   z-index: 9999;
   color: white;
-  transition: opacity 1s ease-out;
+  transition: opacity 0.3s ease-out;
 }
 
 .splash-logo {
@@ -1718,19 +1718,17 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     <script>
       // SPLASH SCREEN Y ANUNCIO
       window.addEventListener('load', function() {
-        setTimeout(() => {
-          const splashScreen = document.getElementById('splashScreen');
-          if (splashScreen) {
-            splashScreen.classList.add('fade-out');
-            setTimeout(() => {
-              splashScreen.style.display = 'none';
-              const announcementModal = document.getElementById('announcementModal');
-              if (announcementModal) {
-                announcementModal.style.display = 'flex';
-              }
-            }, 1000);
-          }
-        }, 750);
+        const splashScreen = document.getElementById('splashScreen');
+        if (splashScreen) {
+          splashScreen.classList.add('fade-out');
+          setTimeout(() => {
+            splashScreen.style.display = 'none';
+            const announcementModal = document.getElementById('announcementModal');
+            if (announcementModal) {
+              announcementModal.style.display = 'flex';
+            }
+          }, 400);
+        }
       });
 
       // CERRAR ANUNCIO

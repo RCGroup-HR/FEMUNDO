@@ -45,10 +45,20 @@ const pubDateEN = article.pub_date ? new Date(article.pub_date).toLocaleDateStri
     <meta property="og:description" content={article.excerpt_es || ''} />
     {article.hero_image_url && <meta property="og:image" content={article.hero_image_url} />}
     <style>
-      .article-hero { width: 100%; max-height: 500px; object-fit: cover; display: block; }
+      .article-hero-wrapper {
+        width: 100%; background: #0f172a;
+        display: flex; justify-content: center; align-items: center;
+        max-height: 520px; overflow: hidden;
+      }
+      .article-hero {
+        width: 100%; max-height: 520px;
+        object-fit: contain; object-position: center;
+        display: block;
+      }
       .article-hero-gradient {
         background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #ff8c00 100%);
         height: 200px; display: flex; align-items: center; justify-content: center;
+        width: 100%;
       }
       .article-hero-gradient i { font-size: 4rem; color: rgba(255,255,255,0.3); }
       .article-container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
@@ -114,7 +124,9 @@ const pubDateEN = article.pub_date ? new Date(article.pub_date).toLocaleDateStri
 
   <!-- Hero Image -->
   {article.hero_image_url ? (
-    <img src={article.hero_image_url} alt={article.title_es} class="article-hero" />
+    <div class="article-hero-wrapper">
+      <img src={article.hero_image_url} alt={article.title_es} class="article-hero" />
+    </div>
   ) : (
     <div class="article-hero-gradient"><i class="fas fa-newspaper"></i></div>
   )}
