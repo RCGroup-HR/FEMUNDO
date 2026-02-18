@@ -24,20 +24,26 @@ export const PUT: APIRoute = async ({ params, request }) => {
   const body = await parseBody(request);
   if (!body) return errorResponse('Body inválido', 400);
 
-  const imageUrl = body.hero_image_url || body.image_url || null;
+  try {
+    const imageUrl = body.hero_image_url || body.image_url || null;
+    const pubDate = body.pub_date ? String(body.pub_date).slice(0, 10) : null;
 
-  await execute(
-    `UPDATE articles SET title_es=?, title_en=?, excerpt_es=?, excerpt_en=?, content_es=?, content_en=?,
-     hero_image_url=?, category=?, tags=?, status=?, is_featured=?, featured_order=?, pub_date=? WHERE id=?`,
-    [body.title_es || null, body.title_en || null, body.excerpt_es || null, body.excerpt_en || null,
-     body.content_es || null, body.content_en || null,
-     imageUrl, body.category || null, body.tags ? JSON.stringify(body.tags) : null,
-     body.status || 'draft', body.is_featured ? 1 : 0, body.featured_order || 0,
-     body.pub_date || null, params.id]
-  );
+    await execute(
+      `UPDATE articles SET title_es=?, title_en=?, excerpt_es=?, excerpt_en=?, content_es=?, content_en=?,
+       hero_image_url=?, category=?, tags=?, status=?, is_featured=?, featured_order=?, pub_date=? WHERE id=?`,
+      [body.title_es || null, body.title_en || null, body.excerpt_es || null, body.excerpt_en || null,
+       body.content_es || null, body.content_en || null,
+       imageUrl, body.category || null, body.tags ? JSON.stringify(body.tags) : null,
+       body.status || 'draft', body.is_featured ? 1 : 0, body.featured_order || 0,
+       pubDate, params.id]
+    );
 
-  await logActivity(user.id, 'update', 'articles', parseInt(params.id!), null, getClientIP(request));
-  return jsonResponse({ message: 'Artículo actualizado' });
+    await logActivity(user.id, 'update', 'articles', parseInt(params.id!), null, getClientIP(request));
+    return jsonResponse({ message: 'Artículo actualizado' });
+  } catch (e: any) {
+    console.error('PUT /api/articles/[id] error:', e);
+    return errorResponse(`Error al actualizar artículo: ${e?.message || String(e)}`, 500);
+  }
 };
 
 export const DELETE: APIRoute = async ({ params, request }) => {
