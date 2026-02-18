@@ -14,11 +14,10 @@ let pagination: any = {};
 try {
   const offset = (page - 1) * limit;
   articles = await query(
-    'SELECT * FROM articles WHERE status = ? ORDER BY pub_date DESC, created_at DESC LIMIT ? OFFSET ?',
-    ['published', limit, offset]
+    `SELECT * FROM articles WHERE status = 'published' ORDER BY pub_date DESC, created_at DESC LIMIT ${limit} OFFSET ${offset}`
   ) as any[];
 
-  const countResult = await query('SELECT COUNT(*) as total FROM articles WHERE status = ?', ['published']) as any[];
+  const countResult = await query("SELECT COUNT(*) as total FROM articles WHERE status = 'published'") as any[];
   const total = countResult[0]?.total || 0;
   const totalPages = Math.ceil(total / limit);
 
