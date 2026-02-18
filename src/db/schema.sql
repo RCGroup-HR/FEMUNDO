@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS video_section (
   subtitle_en TEXT,
   video_url VARCHAR(500) NOT NULL,
   video_type ENUM('youtube', 'vimeo', 'direct') DEFAULT 'youtube',
+  multimedia_video_url VARCHAR(500) NULL,
   is_active BOOLEAN DEFAULT TRUE,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

@@ -21,15 +21,6 @@ export const PUT: APIRoute = async ({ request }) => {
 
   const existing = await queryOne('SELECT id FROM video_section LIMIT 1');
 
-  // Check if multimedia_video_url column exists, add if missing
-  try {
-    await execute('SELECT multimedia_video_url FROM video_section LIMIT 1');
-  } catch {
-    try {
-      await execute('ALTER TABLE video_section ADD COLUMN multimedia_video_url VARCHAR(500) NULL');
-    } catch { /* column might already exist */ }
-  }
-
   if (existing) {
     await execute(
       `UPDATE video_section SET title_es=?, title_en=?, subtitle_es=?, subtitle_en=?,
