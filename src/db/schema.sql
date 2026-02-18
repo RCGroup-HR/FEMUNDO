@@ -479,3 +479,23 @@ CREATE TABLE IF NOT EXISTS activity_log (
   INDEX idx_activity_date (created_at),
   INDEX idx_activity_entity (entity_type, entity_id)
 ) ENGINE=InnoDB;
+
+-- ===================================
+-- TABLA: regulation_sections (Reglamento)
+-- ===================================
+CREATE TABLE IF NOT EXISTS regulation_sections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  section_key VARCHAR(100) NOT NULL,
+  title_es VARCHAR(500),
+  title_en VARCHAR(500),
+  content_es LONGTEXT,
+  content_en LONGTEXT,
+  icon VARCHAR(50) DEFAULT NULL,
+  section_type ENUM('article', 'card_system', 'commission', 'final') DEFAULT 'article',
+  display_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_reg_order (display_order),
+  INDEX idx_reg_active (is_active)
+) ENGINE=InnoDB;

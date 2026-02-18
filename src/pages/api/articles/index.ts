@@ -15,13 +15,20 @@ export const GET: APIRoute = async ({ request }) => {
 
   let countSql = 'SELECT COUNT(*) as total FROM articles';
   let sql = 'SELECT id, slug, title_es, title_en, excerpt_es, excerpt_en, hero_image_url, category, status, is_featured, pub_date, views_count, created_at FROM articles';
-  const countParams: any[] = [];
-  const queryParams: any[] = [];
   const conditions: string[] = [];
 
+  // Interpolate safe string values directly to avoid ER_WRONG_ARGUMENTS with mysql2 + MySQL 8
   if (!all) conditions.push("status = 'published'");
-  if (status) { conditions.push('status = ?'); countParams.push(status); queryParams.push(status); }
-  if (category) { conditions.push('category = ?'); countParams.push(category); queryParams.push(category); }
+  if (status) {
+    // Whitelist allowed status values to prevent SQL injection
+    const allowedStatus = ['draft', 'published', 'archived'];
+    if (allowedStatus.includes(status)) conditions.push(`status = '${status}'`);
+  }
+  if (category) {
+    // Sanitize category: only allow alphanumeric, hyphens, underscores
+    const safeCategory = category.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (safeCategory) conditions.push(`category = '${safeCategory}'`);
+  }
   if (featured === 'true') conditions.push('is_featured = TRUE');
 
   if (conditions.length) {
@@ -32,8 +39,8 @@ export const GET: APIRoute = async ({ request }) => {
 
   sql += ` ORDER BY pub_date DESC, created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
-  const [countResult] = await query<any>(countSql, countParams);
-  const data = await query(sql, queryParams);
+  const [countResult] = await query<any>(countSql);
+  const data = await query(sql);
 
   return jsonResponse(paginatedResponse(data, countResult?.total || 0, page, limit));
 };
