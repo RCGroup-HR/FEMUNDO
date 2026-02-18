@@ -28,8 +28,8 @@ export const POST: APIRoute = async ({ request }) => {
   let body: any;
   try {
     body = await request.json();
-  } catch (e: any) {
-    return errorResponse(`Body inválido: ${e?.message || String(e)}`, 400);
+  } catch {
+    return errorResponse('Body inválido', 400);
   }
 
   const { email, password } = body;

@@ -15,15 +15,18 @@ USE femundo_cms;
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
+  username VARCHAR(100) NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   full_name VARCHAR(255) NOT NULL,
   role ENUM('super_admin', 'admin', 'editor', 'viewer') NOT NULL DEFAULT 'editor',
   avatar_url VARCHAR(500) NULL,
   is_active BOOLEAN DEFAULT TRUE,
+  allowed_modules JSON NULL,
   last_login DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_users_email (email),
+  INDEX idx_users_username (username),
   INDEX idx_users_role (role),
   INDEX idx_users_active (is_active)
 ) ENGINE=InnoDB;
