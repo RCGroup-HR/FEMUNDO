@@ -31,12 +31,15 @@ export const PUT: APIRoute = async ({ params, request }) => {
   const body = await parseBody(request);
   if (!body) return errorResponse('Body inválido', 400);
 
+  // Strip time component from ISO datetime strings (e.g. "2025-11-01T00:00:00.000Z" → "2025-11-01")
+  const toDateOnly = (v: any) => v ? String(v).slice(0, 10) : null;
+
   await execute(
     `UPDATE events SET name_es=?, name_en=?, description_es=?, description_en=?, location=?, country=?,
      start_date=?, end_date=?, flyer_image_url=?, cover_image_url=?, registration_url=?, gallery_url=?,
      status=?, is_featured=?, display_order=? WHERE id=?`,
     [body.name_es || body.title_es || null, body.name_en || body.title_en || null, body.description_es || null, body.description_en || null,
-     body.location || null, body.country || null, body.start_date || null, body.end_date || null,
+     body.location || null, body.country || null, toDateOnly(body.start_date), toDateOnly(body.end_date),
      body.flyer_image_url || body.image_url || null, body.cover_image_url || null, body.registration_url || null, body.gallery_url || null,
      body.status || 'upcoming', body.is_featured ? 1 : 0, body.display_order || 0, params.id]
   );

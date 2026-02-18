@@ -54,12 +54,15 @@ export const POST: APIRoute = async ({ request }) => {
 
   const slug = body.slug || generateSlug(nameEs);
 
+  // Strip time component from ISO datetime strings (e.g. "2025-11-01T00:00:00.000Z" → "2025-11-01")
+  const toDateOnly = (v: any) => v ? String(v).slice(0, 10) : null;
+
   const result = await execute(
     `INSERT INTO events (slug, name_es, name_en, description_es, description_en, location, country,
      start_date, end_date, flyer_image_url, cover_image_url, registration_url, gallery_url, status, is_featured, display_order)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [slug, nameEs, nameEn, descEs, descEn,
-     body.location || null, body.country || null, body.start_date || null, body.end_date || null,
+     body.location || null, body.country || null, toDateOnly(body.start_date), toDateOnly(body.end_date),
      imageUrl, body.cover_image_url || null, body.registration_url || null, body.gallery_url || null,
      body.status || 'upcoming', body.is_featured ? 1 : 0, body.display_order || 0]
   );
