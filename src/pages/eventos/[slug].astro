@@ -444,14 +444,14 @@ results.forEach((r: any) => {
                 <!-- Description -->
                 {event.description_es && (
                     <div class="evento-section">
-                        <h2><i class="fas fa-info-circle"></i> <span data-es="Descripción" data-en="Description">Descripción</span></h2>
+                        <h2><i class="fas fa-info-circle"></i> <span data-es="Sobre el Evento" data-en="About the Event">Sobre el Evento</span></h2>
                         <div class="evento-description-text" data-es={event.description_es} data-en={event.description_en || event.description_es}>
                             {event.description_es}
                         </div>
                     </div>
                 )}
 
-                <!-- Pricing -->
+                <!-- Pricing — solo si hay (eventos próximos) -->
                 {pricing.length > 0 && (
                     <div class="evento-section">
                         <h2><i class="fas fa-tags"></i> <span data-es="Planes de Inscripción" data-en="Registration Plans">Planes de Inscripción</span></h2>
@@ -469,10 +469,29 @@ results.forEach((r: any) => {
                     </div>
                 )}
 
-                <!-- Results -->
+                <!-- Gallery Preview — antes de resultados -->
+                {galleryImages.length > 0 && (
+                    <div class="evento-section">
+                        <h2><i class="fas fa-images"></i> <span data-es="Galería de Fotos" data-en="Photo Gallery">Galería de Fotos</span></h2>
+                        <div class="gallery-preview-grid">
+                            {galleryImages.map((img: any) => (
+                                <img src={img.image_url} alt="" class="gallery-preview-img" loading="lazy" />
+                            ))}
+                        </div>
+                        {event.gallery_url && (
+                            <div class="gallery-view-all">
+                                <a href={event.gallery_url} class="evento-btn evento-btn-secondary" style="display:inline-flex">
+                                    <i class="fas fa-images"></i> <span data-es="Ver galería completa" data-en="View full gallery">Ver galería completa</span>
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                <!-- Results — al final, son históricos -->
                 {Object.keys(resultsByCategory).length > 0 && (
                     <div class="evento-section">
-                        <h2><i class="fas fa-trophy"></i> <span data-es="Resultados" data-en="Results">Resultados</span></h2>
+                        <h2><i class="fas fa-trophy"></i> <span data-es="Resultados del Evento" data-en="Event Results">Resultados del Evento</span></h2>
                         {Object.entries(resultsByCategory).map(([category, catResults]) => (
                             <div class="results-category">
                                 <h3>{category}</h3>
@@ -507,29 +526,17 @@ results.forEach((r: any) => {
                         ))}
                     </div>
                 )}
-
-                <!-- Gallery Preview -->
-                {galleryImages.length > 0 && (
-                    <div class="evento-section">
-                        <h2><i class="fas fa-images"></i> <span data-es="Galería" data-en="Gallery">Galería</span></h2>
-                        <div class="gallery-preview-grid">
-                            {galleryImages.map((img: any) => (
-                                <img src={img.thumbnail_url || img.image_url} alt="" class="gallery-preview-img" loading="lazy" />
-                            ))}
-                        </div>
-                        {event.gallery_url && (
-                            <div class="gallery-view-all">
-                                <a href={event.gallery_url} class="evento-btn evento-btn-secondary" style="display:inline-flex">
-                                    <i class="fas fa-images"></i> <span data-es="Ver galería completa" data-en="View full gallery">Ver galería completa</span>
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
 
             <!-- Sidebar -->
             <div class="evento-sidebar">
+                <!-- Flyer primero — lo más visual -->
+                {event.flyer_image_url && (
+                    <div class="evento-sidebar-card" style="padding: 12px;">
+                        <img src={event.flyer_image_url} alt={event.name_es} class="evento-flyer" loading="lazy" />
+                    </div>
+                )}
+
                 <!-- Event Info -->
                 <div class="evento-sidebar-card">
                     <h3 data-es="Información del Evento" data-en="Event Information">Información del Evento</h3>
@@ -537,47 +544,52 @@ results.forEach((r: any) => {
                         {event.location && (
                             <div class="evento-info-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>{event.location}</span>
-                            </div>
-                        )}
-                        {event.country && (
-                            <div class="evento-info-item">
-                                <i class="fas fa-globe"></i>
-                                <span>{event.country}</span>
+                                <span>{event.location}{event.country ? `, ${event.country}` : ''}</span>
                             </div>
                         )}
                         {event.start_date && (
                             <div class="evento-info-item">
                                 <i class="fas fa-calendar-alt"></i>
-                                <span data-es={`${formatDate(event.start_date)} - ${formatDate(event.end_date)}`} data-en={`${formatDateEn(event.start_date)} - ${formatDateEn(event.end_date)}`}>{formatDate(event.start_date)} - {formatDate(event.end_date)}</span>
+                                <span data-es={formatDate(event.start_date)} data-en={formatDateEn(event.start_date)}>{formatDate(event.start_date)}{event.end_date ? ` — ${formatDate(event.end_date)}` : ''}</span>
                             </div>
                         )}
                         <div class="evento-info-item">
-                            <i class="fas fa-circle-info"></i>
-                            <span class={`evento-status status-${event.status}`} data-es={event.status === 'upcoming' ? 'Próximo' : event.status === 'active' ? 'En curso' : 'Completado'} data-en={event.status === 'upcoming' ? 'Upcoming' : event.status === 'active' ? 'Active' : 'Completed'}>
+                            <i class="fas fa-circle-dot"></i>
+                            <span class={`evento-status status-${event.status}`}>
                                 {event.status === 'upcoming' ? 'Próximo' : event.status === 'active' ? 'En curso' : 'Completado'}
                             </span>
                         </div>
                     </div>
-                    {event.registration_url && (
-                        <a href={event.registration_url} class="evento-cta-btn evento-cta-primary">
-                            <i class="fas fa-user-plus"></i> <span data-es="Inscribirse ahora" data-en="Register now">Inscribirse ahora</span>
-                        </a>
-                    )}
-                    {event.gallery_url && (
-                        <a href={event.gallery_url} class="evento-cta-btn evento-cta-secondary" style="margin-top:8px">
-                            <i class="fas fa-images"></i> <span data-es="Ver galería" data-en="View gallery">Ver galería</span>
-                        </a>
-                    )}
                 </div>
 
-                <!-- Flyer -->
-                {event.flyer_image_url && (
+                <!-- Acciones (inscripción / galería) -->
+                {(event.registration_url || event.gallery_url) && (
                     <div class="evento-sidebar-card">
-                        <h3>Flyer</h3>
-                        <img src={event.flyer_image_url} alt={event.name_es} class="evento-flyer" loading="lazy" />
+                        <h3 data-es="Acciones" data-en="Actions">Acciones</h3>
+                        {event.registration_url && (
+                            <a href={event.registration_url} class="evento-cta-btn evento-cta-primary">
+                                <i class="fas fa-user-plus"></i> <span data-es="Inscribirse ahora" data-en="Register now">Inscribirse ahora</span>
+                            </a>
+                        )}
+                        {event.gallery_url && (
+                            <a href={event.gallery_url} class="evento-cta-btn evento-cta-secondary" style="margin-top:8px">
+                                <i class="fas fa-images"></i> <span data-es="Ver galería" data-en="View gallery">Ver galería</span>
+                            </a>
+                        )}
                     </div>
                 )}
+
+                <!-- Contacto al final -->
+                <div class="evento-sidebar-card" style="background: linear-gradient(135deg, #1e3a8a, #1e40af); color: white;">
+                    <h3 style="color: white; margin-bottom: 10px;">
+                        <i class="fas fa-envelope" style="color: #ff8c00; margin-right: 8px;"></i>
+                        <span data-es="¿Tienes dudas?" data-en="Have questions?">¿Tienes dudas?</span>
+                    </h3>
+                    <p style="font-size: 0.85rem; opacity: 0.85; margin-bottom: 14px;" data-es="Contáctanos para más información sobre este evento." data-en="Contact us for more information about this event.">Contáctanos para más información sobre este evento.</p>
+                    <a href="mailto:info@femundo.org" class="evento-cta-btn" style="background: #ff8c00; color: white; display:block; text-align:center; padding:10px; border-radius:20px; text-decoration:none; font-weight:600; font-size:0.85rem;">
+                        <i class="fas fa-envelope"></i> info@femundo.org
+                    </a>
+                </div>
             </div>
         </div>
     </div>
