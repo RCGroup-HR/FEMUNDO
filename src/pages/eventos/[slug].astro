@@ -54,11 +54,7 @@ results.forEach((r: any) => {
   <Fragment slot="head">
     <style>
         .hero-evento-detalle {
-            background:
-                radial-gradient(ellipse at 15% 50%, rgba(255,140,0,0.18) 0%, transparent 55%),
-                radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.25) 0%, transparent 50%),
-                radial-gradient(ellipse at 60% 90%, rgba(255,140,0,0.10) 0%, transparent 45%),
-                linear-gradient(135deg, #0a1628 0%, #0f2060 35%, #1e3a8a 65%, #1a3580 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #ff8c00 100%);
             color: white;
             padding: 80px 20px 70px;
             text-align: center;
@@ -86,15 +82,7 @@ results.forEach((r: any) => {
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, transparent, #ff8c00, transparent);
-        }
-
-        .hero-evento-detalle::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 60%);
-            pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
         }
 
         .hero-evento-detalle .hero-content {
