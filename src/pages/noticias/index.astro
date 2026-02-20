@@ -38,22 +38,40 @@ try {
   <Fragment slot="head">
     <style>
       .page-hero {
-        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #ff8c00 100%);
-        color: white; padding: 3rem 1.5rem; text-align: center;
+        background:
+          radial-gradient(ellipse at 15% 50%, rgba(255,140,0,0.18) 0%, transparent 55%),
+          radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.25) 0%, transparent 50%),
+          radial-gradient(ellipse at 60% 90%, rgba(255,140,0,0.10) 0%, transparent 45%),
+          linear-gradient(135deg, #0a1628 0%, #0f2060 35%, #1e3a8a 65%, #1a3580 100%);
+        color: white; padding: 5rem 1.5rem 4rem; text-align: center;
+        position: relative; overflow: hidden;
       }
-      .page-hero h1 { font-family: 'Raleway', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: white; }
-      .page-hero p { font-size: 1.1rem; opacity: 0.9; }
-      .noticias-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+      .page-hero::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+        height: 3px; background: linear-gradient(90deg, transparent, #ff8c00, transparent);
+      }
+      .page-hero .hero-badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(255,140,0,0.2); border: 1px solid rgba(255,140,0,0.4);
+        color: #ffb347; padding: 6px 18px; border-radius: 20px;
+        font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; margin-bottom: 1.25rem;
+      }
+      .page-hero h1 { font-family: 'Raleway', sans-serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; margin-bottom: 0.75rem; color: white; letter-spacing: -0.5px; }
+      .page-hero p { font-size: 1.1rem; opacity: 0.85; max-width: 520px; margin: 0 auto; }
+      .noticias-container { max-width: 1100px; margin: 0 auto; padding: 3rem 1.5rem; }
       .articles-grid {
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;
+        display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;
       }
       .article-card {
-        background: white; border-radius: 12px; overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        transition: transform 0.2s, box-shadow 0.2s;
+        background: white; border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 12px rgba(30,58,138,0.08);
+        transition: transform 0.25s, box-shadow 0.25s;
         text-decoration: none; color: inherit; display: flex; flex-direction: column;
+        width: 320px; max-width: calc(100vw - 3rem); flex-shrink: 0;
+        border: 1px solid rgba(30,58,138,0.06);
       }
-      .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+      .article-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(30,58,138,0.14); border-color: rgba(255,140,0,0.25); }
       .card-image { width: 100%; height: 200px; object-fit: cover; background: #e2e8f0; }
       .card-image-placeholder { width: 100%; height: 200px; background: linear-gradient(135deg, #1e3a8a, #ff8c00); display: flex; align-items: center; justify-content: center; }
       .card-image-placeholder i { font-size: 3rem; color: rgba(255,255,255,0.4); }
@@ -84,6 +102,7 @@ try {
   </Fragment>
 
   <div class="page-hero">
+    <div class="hero-badge"><i class="fas fa-newspaper"></i> <span data-es="Actualidad FEMUNDO" data-en="FEMUNDO News">Actualidad FEMUNDO</span></div>
     <h1 data-es="Noticias" data-en="News">Noticias</h1>
     <p data-es="Las últimas novedades del mundo del dominó" data-en="The latest news from the world of dominoes">Las últimas novedades del mundo del dominó</p>
   </div>

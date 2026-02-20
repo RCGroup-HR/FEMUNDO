@@ -56,9 +56,16 @@ const pubDateEN = article.pub_date ? new Date(article.pub_date).toLocaleDateStri
         display: block;
       }
       .article-hero-gradient {
-        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #ff8c00 100%);
-        height: 200px; display: flex; align-items: center; justify-content: center;
-        width: 100%;
+        background:
+          radial-gradient(ellipse at 15% 50%, rgba(255,140,0,0.18) 0%, transparent 55%),
+          radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.25) 0%, transparent 50%),
+          linear-gradient(135deg, #0a1628 0%, #0f2060 35%, #1e3a8a 65%, #1a3580 100%);
+        height: 280px; display: flex; align-items: center; justify-content: center;
+        width: 100%; position: relative;
+      }
+      .article-hero-gradient::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+        height: 3px; background: linear-gradient(90deg, transparent, #ff8c00, transparent);
       }
       .article-hero-gradient i { font-size: 4rem; color: rgba(255,255,255,0.3); }
       .article-container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
