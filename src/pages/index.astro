@@ -372,7 +372,9 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin-top: 2rem;
-  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 0;
 }
 
@@ -393,7 +395,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-  height: 420px;
+  height: 320px;
 }
 
 .upcoming-event img {
@@ -497,29 +499,31 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 }
 
 @media (min-width: 1024px) {
-  .upcoming-events { gap: 1.5rem; }
-  .upcoming-event-img-wrap { height: 500px; }
-  .upcoming-event-title { font-size: 1.6rem; }
+  .upcoming-events { gap: 1.5rem; max-width: 900px; }
+  .upcoming-event-img-wrap { height: 360px; }
+  .upcoming-event-title { font-size: 1.5rem; }
 }
 
 @media (min-width: 1440px) {
-  .upcoming-event-img-wrap { height: 580px; }
-  .upcoming-event-title { font-size: 1.8rem; }
+  .upcoming-events { max-width: 960px; }
+  .upcoming-event-img-wrap { height: 400px; }
+  .upcoming-event-title { font-size: 1.6rem; }
 }
 
 @media (max-width: 768px) {
   .upcoming-events {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 0 0.5rem;
+    gap: 1.25rem;
+    max-width: 480px;
+    padding: 0;
   }
-  .upcoming-event-img-wrap { height: 340px; }
+  .upcoming-event-img-wrap { height: 280px; }
   .upcoming-event-title { font-size: 1.2rem; }
 }
 
 @media (min-width: 769px) and (max-width: 1023px) {
-  .upcoming-events { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  .upcoming-event-img-wrap { height: 360px; }
+  .upcoming-events { grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 820px; }
+  .upcoming-event-img-wrap { height: 300px; }
   .upcoming-event-title { font-size: 1.3rem; }
 }
 
@@ -1044,7 +1048,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 /* Events Section */
 .events-section {
-  padding: 2rem;
+  padding: 3rem 2rem;
   background-color: white;
 }
 
@@ -1052,29 +1056,35 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 2rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
   align-items: stretch;
+  max-width: 960px;
+  margin: 1.5rem auto 0;
 }
 
 .catalog {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
   margin-top: 2rem;
-  justify-items: start;
+  justify-items: center;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .catalog-item {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(30, 58, 138, 0.1);
+  box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
   position: relative;
-  border: 2px solid transparent;
-  max-width: 400px;
+  border: 1px solid rgba(30,58,138,0.07);
+  max-width: 380px;
+  width: 100%;
 }
 
 .catalog-item:hover {
@@ -1489,6 +1499,20 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   line-height: 1.5;
 }
 
+/* Noticias grid responsive */
+@media (max-width: 900px) {
+  #noticias-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    max-width: 640px !important;
+  }
+}
+@media (max-width: 580px) {
+  #noticias-grid {
+    grid-template-columns: 1fr !important;
+    max-width: 420px !important;
+  }
+}
+
 /* Gallery Modal */
 .modal-content {
   border-radius: 20px;
@@ -1735,13 +1759,13 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
   <!-- 5. NOTICIAS -->
   <section id="noticias-section" style="padding: 4rem 2rem; background: #f1f5f9;">
-    <div style="max-width: 1200px; margin: 0 auto;">
+    <div style="max-width: 1100px; margin: 0 auto;">
       <h2 class="section-title" style="text-align:center; font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;"
         data-es="Últimas Noticias" data-en="Latest News">Últimas Noticias</h2>
       <p style="text-align: center; font-size: 1.05rem; color: #64748b; margin-bottom: 2.5rem;"
         data-es="Mantente al día con las novedades del mundo del dominó"
         data-en="Stay up to date with the latest domino news">Mantente al día con las novedades del mundo del dominó</p>
-      <div id="noticias-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
+      <div id="noticias-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 960px; margin: 0 auto;">
       </div>
       <div id="noticias-empty" style="display: none; text-align: center; padding: 2rem; color: #94a3b8;">
         <i class="fas fa-newspaper" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block;"></i>
