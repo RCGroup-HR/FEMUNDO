@@ -1495,7 +1495,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     </div>
   </section>
 
-  <!-- PRÓXIMOS EVENTOS -->
+  <!-- 1. PRÓXIMOS EVENTOS -->
   {upcomingEvents.length > 0 && (
     <section id="proximos-eventos" class="events-section">
       <h2 class="section-title" data-es="Próximos Eventos" data-en="Upcoming Events">Próximos Eventos</h2>
@@ -1511,23 +1511,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     </section>
   )}
 
-  <!-- EVENTOS DESTACADOS -->
-  {featuredEvents.length > 0 && (
-    <section id="eventos" class="events-section">
-      <h2 class="section-title" data-es="Eventos Destacados" data-en="Featured Events">Eventos Destacados</h2>
-      <div class="catalog">
-        {featuredEvents.map((ev: any) => (
-          <div class="catalog-item" data-event={ev.slug} data-gallery-url={ev.gallery_url || '#'}>
-            <img src={ev.cover_image_url || ev.flyer_image_url || ''} alt={ev.name_es} />
-            <h3 data-es={ev.name_es} data-en={ev.name_en || ev.name_es}>{ev.name_es}</h3>
-            <div class="view-gallery" data-es="Ver Galería" data-en="View Gallery">Ver Galería</div>
-          </div>
-        ))}
-      </div>
-    </section>
-  )}
-
-  <!-- ABOUT -->
+  <!-- 2. SOBRE FEMUNDO -->
   <section id="nosotros" class="about-section">
     <div class="about-content">
       <h2 class="section-title" data-es="Sobre FEMUNDO" data-en="About FEMUNDO">Sobre FEMUNDO</h2>
@@ -1544,7 +1528,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     </div>
   </section>
 
-  <!-- STATS -->
+  <!-- 3. ESTADÍSTICAS -->
   <section class="stats-section">
     <div class="stats-container">
       {stats.length > 0 ? (
@@ -1577,7 +1561,44 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     </div>
   </section>
 
-  <!-- VIDEO -->
+  <!-- 4. EVENTOS DESTACADOS -->
+  {featuredEvents.length > 0 && (
+    <section id="eventos" class="events-section">
+      <h2 class="section-title" data-es="Eventos Destacados" data-en="Featured Events">Eventos Destacados</h2>
+      <div class="catalog">
+        {featuredEvents.map((ev: any) => (
+          <div class="catalog-item" data-event={ev.slug} data-gallery-url={ev.gallery_url || '#'}>
+            <img src={ev.cover_image_url || ev.flyer_image_url || ''} alt={ev.name_es} />
+            <h3 data-es={ev.name_es} data-en={ev.name_en || ev.name_es}>{ev.name_es}</h3>
+            <div class="view-gallery" data-es="Ver Galería" data-en="View Gallery">Ver Galería</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- 5. NOTICIAS -->
+  <section id="noticias-section" style="padding: 4rem 2rem; background: #f1f5f9;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <h2 class="section-title" style="text-align:center; font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;"
+        data-es="Últimas Noticias" data-en="Latest News">Últimas Noticias</h2>
+      <p style="text-align: center; font-size: 1.05rem; color: #64748b; margin-bottom: 2.5rem;"
+        data-es="Mantente al día con las novedades del mundo del dominó"
+        data-en="Stay up to date with the latest domino news">Mantente al día con las novedades del mundo del dominó</p>
+      <div id="noticias-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
+      </div>
+      <div id="noticias-empty" style="display: none; text-align: center; padding: 2rem; color: #94a3b8;">
+        <i class="fas fa-newspaper" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block;"></i>
+        <p data-es="Pronto publicaremos noticias aquí" data-en="We will publish news here soon">Pronto publicaremos noticias aquí</p>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="/noticias" id="ver-noticias-link" style="display: none; padding: 0.75rem 2rem; background: #1e3a8a; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background 0.2s;"
+          data-es="Ver todas las noticias →" data-en="View all news →">Ver todas las noticias →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. VIDEO -->
   <section class="video-section py-5">
     <div class="container">
       <h2 class="section-title" data-es={videoData.title_es || 'Últimos Contenidos'} data-en={videoData.title_en || 'Latest Content'}>{videoData.title_es || 'Últimos Contenidos'}</h2>
@@ -1603,32 +1624,28 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     </div>
   </section>
 
-  <!-- CONTACTO -->
+  <!-- 7. CONTACTO — siempre al final -->
   <section id="contacto" class="contact-section">
     <h2 class="section-title" data-es="Contáctanos" data-en="Contact Us">Contáctanos</h2>
     <div class="contact-info">
       <p data-es="¿Tienes alguna pregunta o comentario? Estamos aquí para ayudarte." data-en="Do you have any questions or comments? We are here to help you.">¿Tienes alguna pregunta o comentario? Estamos aquí para ayudarte.</p>
-
       <div class="contact-details">
         <div class="contact-item">
           <i class="fas fa-map-marker-alt contact-icon"></i>
           <h4 data-es="Dirección" data-en="Address">Dirección</h4>
           <p data-es={contactData.address_es || ''} data-en={contactData.address_en || ''}>{contactData.address_es || '337 Pienwild Ct Orlando, FL 32828'}</p>
         </div>
-
         <div class="contact-item">
           <i class="fas fa-phone contact-icon"></i>
           <h4 data-es="Teléfono" data-en="Phone">Teléfono</h4>
           <p>{contactData.phone || '+1 407-232-5635'}</p>
         </div>
-
         <div class="contact-item">
           <i class="fas fa-envelope contact-icon"></i>
           <h4 data-es="Email" data-en="Email">Email</h4>
           <p>{contactData.email || 'femundoinfo@gmail.com'}</p>
         </div>
       </div>
-
       <div class="social-links">
         {contactData.facebook_url && (
           <a href={contactData.facebook_url} class="social-icon facebook" target="_blank" rel="noopener">
@@ -1650,27 +1667,6 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
             <i class="fab fa-whatsapp"></i>
           </a>
         )}
-      </div>
-    </div>
-  </section>
-
-  <!-- Sección Noticias (carga client-side) -->
-  <section id="noticias-section" style="padding: 4rem 2rem; background: #f1f5f9;">
-    <div style="max-width: 1200px; margin: 0 auto;">
-      <h2 class="section-title" style="text-align:center; font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;"
-        data-es="Últimas Noticias" data-en="Latest News">Últimas Noticias</h2>
-      <p style="text-align: center; font-size: 1.05rem; color: #64748b; margin-bottom: 2.5rem;"
-        data-es="Mantente al día con las novedades del mundo del dominó"
-        data-en="Stay up to date with the latest domino news">Mantente al día con las novedades del mundo del dominó</p>
-      <div id="noticias-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
-      </div>
-      <div id="noticias-empty" style="display: none; text-align: center; padding: 2rem; color: #94a3b8;">
-        <i class="fas fa-newspaper" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block;"></i>
-        <p data-es="Pronto publicaremos noticias aquí" data-en="We will publish news here soon">Pronto publicaremos noticias aquí</p>
-      </div>
-      <div style="text-align: center; margin-top: 2rem;">
-        <a href="/noticias" id="ver-noticias-link" style="display: none; padding: 0.75rem 2rem; background: #1e3a8a; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background 0.2s;"
-          data-es="Ver todas las noticias →" data-en="View all news →">Ver todas las noticias →</a>
       </div>
     </div>
   </section>
