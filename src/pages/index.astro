@@ -369,191 +369,158 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 /* UPCOMING EVENTS */
 .upcoming-events {
   display: grid;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
   margin-top: 2rem;
-  max-width: none !important;
-  width: 100% !important;
+  width: 100%;
   padding: 0;
 }
 
 .upcoming-event {
   background: #fff;
-  border-radius: 25px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 30px 80px rgba(30, 58, 138, 0.4);
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 10px 40px rgba(30, 58, 138, 0.15);
+  transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s;
   cursor: pointer;
   position: relative;
-  border: 3px solid transparent;
-  width: 100% !important;
-  height: 500px !important;
-  min-height: 500px !important;
-  max-height: 500px !important;
   display: flex;
   flex-direction: column;
+  border: 2px solid rgba(30, 58, 138, 0.08);
+}
+
+.upcoming-event-img-wrap {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  height: 420px;
 }
 
 .upcoming-event img {
   width: 100%;
-  height: 400px !important;
-  min-height: 400px !important;
-  object-fit: cover !important;
+  height: 100%;
+  object-fit: cover;
   object-position: center;
-  transition: opacity 0.3s;
-  flex-shrink: 0;
+  transition: transform 0.5s ease;
+  display: block;
 }
 
 .upcoming-event:hover img {
-  opacity: 0.8;
+  transform: scale(1.06);
 }
 
-.upcoming-event h3 {
+.upcoming-event-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15,32,96,0.85) 0%, rgba(15,32,96,0.2) 50%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   padding: 1.5rem;
-  font-size: 1.6rem !important;
-  text-align: center;
-  color: var(--primary-dark);
-  font-weight: 600;
-  flex-grow: 1;
+}
+
+.upcoming-event-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.5rem;
+  font-family: 'Raleway', sans-serif;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.upcoming-event-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0;
-  height: 100px !important;
-  min-height: 100px !important;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.upcoming-event .view-gallery {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+.upcoming-event-meta span {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.88);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.upcoming-event-meta i {
+  color: #ff8c00;
+  font-size: 0.78rem;
+}
+
+.upcoming-event-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #ff8c00, #e67e00);
   color: white;
-  padding: 1rem 2.5rem;
-  border-radius: 30px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 3;
+  padding: 0.55rem 1.3rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
   font-weight: 700;
-  font-size: 1.3rem;
-  pointer-events: none;
-  box-shadow: 0 16px 60px rgba(16, 185, 129, 0.3);
-  white-space: nowrap;
-}
-
-.upcoming-event:hover .view-gallery {
-  opacity: 1;
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.75rem;
+  width: fit-content;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255,140,0,0.35);
 }
 
 .upcoming-event:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 40px 100px rgba(30, 58, 138, 0.5);
+  transform: translateY(-6px);
+  box-shadow: 0 25px 60px rgba(30, 58, 138, 0.25);
+}
+
+.upcoming-event:hover .upcoming-event-cta {
+  background: linear-gradient(135deg, #e67e00, #cc7000);
+  box-shadow: 0 6px 20px rgba(255,140,0,0.5);
+}
+
+/* Countdown badge */
+.upcoming-event-countdown {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255,140,0,0.95);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 @media (min-width: 1024px) {
-  .upcoming-events {
-    gap: 0.25rem;
-    padding: 0;
-  }
-  .upcoming-event {
-    height: 600px !important;
-    min-height: 600px !important;
-    max-height: 600px !important;
-    border-radius: 30px;
-  }
-  .upcoming-event img {
-    height: 480px !important;
-    min-height: 480px !important;
-  }
-  .upcoming-event h3 {
-    font-size: 2rem !important;
-    padding: 1.5rem;
-    height: 120px !important;
-    min-height: 120px !important;
-  }
-  .upcoming-event .view-gallery {
-    padding: 1.5rem 3.5rem;
-    font-size: 1.6rem;
-    border-radius: 40px;
-  }
+  .upcoming-events { gap: 1.5rem; }
+  .upcoming-event-img-wrap { height: 500px; }
+  .upcoming-event-title { font-size: 1.6rem; }
 }
 
 @media (min-width: 1440px) {
-  .upcoming-events {
-    gap: 0.125rem;
-    padding: 0;
-  }
-  .upcoming-event {
-    height: 700px !important;
-    min-height: 700px !important;
-    max-height: 700px !important;
-  }
-  .upcoming-event img {
-    height: 560px !important;
-    min-height: 560px !important;
-  }
-  .upcoming-event h3 {
-    font-size: 2.2rem !important;
-    height: 140px !important;
-    min-height: 140px !important;
-  }
-  .upcoming-event .view-gallery {
-    font-size: 1.8rem;
-    padding: 2rem 4rem;
-  }
+  .upcoming-event-img-wrap { height: 580px; }
+  .upcoming-event-title { font-size: 1.8rem; }
 }
 
 @media (max-width: 768px) {
   .upcoming-events {
     grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 0 1rem;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
   }
-  .upcoming-event {
-    height: 450px !important;
-    min-height: 450px !important;
-    max-height: 450px !important;
-    border-radius: 20px;
-  }
-  .upcoming-event img {
-    height: 350px !important;
-    min-height: 350px !important;
-  }
-  .upcoming-event h3 {
-    font-size: 1.3rem !important;
-    padding: 1.5rem;
-    height: 100px !important;
-    min-height: 100px !important;
-  }
-  .upcoming-event .view-gallery {
-    font-size: 1.1rem;
-    padding: 0.8rem 2rem;
-    border-radius: 25px;
-  }
+  .upcoming-event-img-wrap { height: 340px; }
+  .upcoming-event-title { font-size: 1.2rem; }
 }
 
 @media (min-width: 769px) and (max-width: 1023px) {
-  .upcoming-events {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.25rem;
-    padding: 0;
-  }
-  .upcoming-event {
-    height: 450px !important;
-    min-height: 450px !important;
-    max-height: 450px !important;
-  }
-  .upcoming-event img {
-    height: 350px !important;
-    min-height: 350px !important;
-  }
-  .upcoming-event h3 {
-    font-size: 1.5rem !important;
-    height: 100px !important;
-    min-height: 100px !important;
-  }
+  .upcoming-events { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .upcoming-event-img-wrap { height: 360px; }
+  .upcoming-event-title { font-size: 1.3rem; }
 }
 
 /* Media Queries Generales */
@@ -1169,61 +1136,157 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 .about-section {
   display: flex;
   align-items: center;
-  padding: 4rem 2rem;
+  padding: 5rem 2rem;
   background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
-}
-
-.about-content {
-  flex: 1;
-  padding-right: 3rem;
-}
-
-.about-image {
-  flex: 1;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--box-shadow);
-}
-
-.about-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Stats Section */
-.stats-section {
-  background: var(--gradient);
-  color: white;
-  padding: 3rem 2rem;
-  text-align: center;
-}
-
-.stats-container {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
+  gap: 4rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.stat-item {
-  padding: 1.5rem;
+.about-section-wrap {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+  padding: 0 0 2rem;
+}
+
+.about-content {
   flex: 1;
-  min-width: 200px;
+  padding-right: 0;
+}
+
+.about-content .section-title {
+  text-align: left;
+  margin-top: 0;
+}
+
+.about-content .section-title::after {
+  left: 0;
+  transform: none;
+}
+
+.about-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 1rem;
+}
+
+.about-content p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #475569;
+  margin-bottom: 1rem;
+}
+
+.about-image {
+  flex: 0 0 280px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  padding: 2rem;
+}
+
+.about-image img {
+  max-height: 320px;
+  max-width: 220px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+}
+
+/* Stats Section */
+.stats-section {
+  background: linear-gradient(135deg, #0f2060 0%, #1e3a8a 50%, #1e40af 100%);
+  color: white;
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(255,140,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.stats-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 0;
+}
+
+.stat-item {
+  padding: 2rem 2.5rem;
+  flex: 1;
+  min-width: 180px;
+  position: relative;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+
+.stat-item:last-child {
+  border-right: none;
+}
+
+.stat-icon {
+  font-size: 1.8rem;
+  color: #ff8c00;
+  margin-bottom: 0.75rem;
+  display: block;
 }
 
 .stat-number {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  font-size: 3.2rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
   color: white;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  line-height: 1;
+  font-family: 'Raleway', sans-serif;
 }
 
 .stat-label {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 0.95rem;
+  opacity: 0.8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .stats-container {
+    gap: 0;
+  }
+  .stat-item {
+    min-width: 50%;
+    flex: 0 0 50%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    padding: 1.5rem 1rem;
+  }
+  .stat-item:nth-child(odd) {
+    border-right: 1px solid rgba(255,255,255,0.12);
+  }
+  .stat-number { font-size: 2.5rem; }
 }
 
 /* Video Section */
@@ -1322,8 +1385,39 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 /* Contact Section */
 .contact-section {
   padding: 5rem 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+  background: linear-gradient(135deg, #0f2060 0%, #1e3a8a 60%, #1e40af 100%);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-section::before {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,140,0,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.contact-section .section-title {
+  color: white;
+}
+
+.contact-section .section-title::after {
+  background: #ff8c00;
+}
+
+.contact-intro {
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.7;
 }
 
 .contact-info {
@@ -1337,18 +1431,16 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 .contact-info p {
   font-size: 1.1rem;
-  color: #64748b;
+  color: rgba(255,255,255,0.75);
   margin-bottom: 3rem;
 }
 
 .contact-details {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin: 3rem 0;
+  gap: 1.5rem;
+  margin: 2rem auto 3rem;
   max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .contact-item {
@@ -1357,34 +1449,43 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   align-items: center;
   text-align: center;
   padding: 2rem 1.5rem;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.08);
-  border-top: 4px solid var(--secondary);
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
 .contact-item:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15);
+  transform: translateY(-6px);
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,140,0,0.4);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
 }
 
 .contact-icon {
-  font-size: 2.5rem;
-  color: var(--secondary);
+  font-size: 2.2rem;
+  color: #ff8c00;
   margin-bottom: 1rem;
+  background: rgba(255,140,0,0.15);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .contact-item h4 {
-  margin-bottom: 0.8rem;
-  color: var(--primary-dark);
-  font-size: 1.3rem;
+  margin-bottom: 0.6rem;
+  color: white;
+  font-size: 1.1rem;
 }
 
 .contact-item p {
-  color: #64748b;
+  color: rgba(255,255,255,0.75);
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.5;
 }
 
@@ -1516,62 +1617,98 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
   <!-- 1. PRÓXIMOS EVENTOS -->
   {upcomingEvents.length > 0 && (
-    <section id="proximos-eventos" class="events-section">
+    <section id="proximos-eventos" class="events-section" style="padding: 3rem 2rem; background: #f8fafc;">
       <h2 class="section-title" data-es="Próximos Eventos" data-en="Upcoming Events">Próximos Eventos</h2>
-      <div class="catalog upcoming-events">
-        {upcomingEvents.map((ev: any) => (
-          <div class="catalog-item upcoming-event" data-event={ev.slug} data-registration-url={ev.registration_url || `/registro?evento=${ev.slug}`}>
-            <img src={ev.flyer_image_url || ev.cover_image_url || ''} alt={ev.name_es} />
-            <h3 data-es={ev.name_es} data-en={ev.name_en || ev.name_es}>{ev.name_es}</h3>
-            <div class="view-gallery" data-es="Inscribirse" data-en="Register">Inscribirse</div>
-          </div>
-        ))}
+      <p style="text-align:center; color:#64748b; margin-top:-1rem; margin-bottom:2rem; font-size:1rem;" data-es="No te pierdas los torneos y campeonatos que se aproximan" data-en="Don't miss the upcoming tournaments and championships">No te pierdas los torneos y campeonatos que se aproximan</p>
+      <div class="upcoming-events">
+        {upcomingEvents.map((ev: any) => {
+          const daysLeft = ev.start_date ? Math.max(0, Math.ceil((new Date(ev.start_date).getTime() - Date.now()) / 86400000)) : null;
+          return (
+            <div class="upcoming-event" data-event={ev.slug} data-registration-url={ev.registration_url || `/registro?evento=${ev.slug}`}>
+              <div class="upcoming-event-img-wrap">
+                <img src={ev.flyer_image_url || ev.cover_image_url || ''} alt={ev.name_es} loading="lazy" />
+                {daysLeft !== null && daysLeft <= 90 && (
+                  <div class="upcoming-event-countdown">
+                    <i class="fas fa-clock"></i>
+                    {daysLeft === 0 ? <span data-es="¡Hoy!" data-en="Today!">¡Hoy!</span> : <span data-es={`${daysLeft} días`} data-en={`${daysLeft} days`}>{daysLeft} días</span>}
+                  </div>
+                )}
+                <div class="upcoming-event-overlay">
+                  <h3 class="upcoming-event-title" data-es={ev.name_es} data-en={ev.name_en || ev.name_es}>{ev.name_es}</h3>
+                  <div class="upcoming-event-meta">
+                    {ev.location && <span><i class="fas fa-map-marker-alt"></i>{ev.location}{ev.country ? `, ${ev.country}` : ''}</span>}
+                    {ev.start_date && <span><i class="fas fa-calendar-alt"></i><span data-es={new Date(ev.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})} data-en={new Date(ev.start_date).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})}>{new Date(ev.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</span></span>}
+                  </div>
+                  <div class="upcoming-event-cta">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span data-es="Inscribirse" data-en="Register">Inscribirse</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   )}
 
   <!-- 2. SOBRE FEMUNDO -->
-  <section id="nosotros" class="about-section">
-    <div class="about-content">
-      <h2 class="section-title" data-es="Sobre FEMUNDO" data-en="About FEMUNDO">Sobre FEMUNDO</h2>
-      {aboutSections.length > 0 ? (
-        aboutSections.map((section: any) => (
-          <p data-es={section.content_es} data-en={section.content_en || section.content_es}>{section.content_es}</p>
-        ))
-      ) : (
-        <p>La Federación Mundial de Dominó (FEMUNDO) es el organismo internacional que regula, promueve y desarrolla el juego de dominó a nivel mundial.</p>
-      )}
-    </div>
-    <div class="about-image" style="flex: 0 0 300px; display: flex; align-items: center; justify-content: center;">
-      <img src="/icono.png" alt="Logo FEMUNDO" style="max-height: 350px; max-width: 250px; width: auto; height: auto; object-fit: contain;" onerror="this.src='https://i.postimg.cc/L5hNTd9X/Femundo-Website-logo.png'">
-    </div>
-  </section>
+  <div class="about-section-wrap">
+    <section id="nosotros" class="about-section">
+      <div class="about-content">
+        <div class="about-badge"><i class="fas fa-globe-americas"></i> <span data-es="Organismo Internacional" data-en="International Organization">Organismo Internacional</span></div>
+        <h2 class="section-title" data-es="Sobre FEMUNDO" data-en="About FEMUNDO">Sobre FEMUNDO</h2>
+        {aboutSections.length > 0 ? (
+          aboutSections.map((section: any) => (
+            <p data-es={section.content_es} data-en={section.content_en || section.content_es}>{section.content_es}</p>
+          ))
+        ) : (
+          <p>La Federación Mundial de Dominó (FEMUNDO) es el organismo internacional que regula, promueve y desarrolla el juego de dominó a nivel mundial, uniendo culturas y naciones a través de esta pasión.</p>
+        )}
+        <a href="#contacto" class="cta-button" style="margin-top:1.5rem; display:inline-flex; align-items:center; gap:8px;">
+          <i class="fas fa-handshake"></i>
+          <span data-es="Conocer más" data-en="Learn more">Conocer más</span>
+        </a>
+      </div>
+      <div class="about-image">
+        <img src="/icono.png" alt="Logo FEMUNDO" onerror="this.src='https://i.postimg.cc/L5hNTd9X/Femundo-Website-logo.png'">
+      </div>
+    </section>
+  </div>
 
   <!-- 3. ESTADÍSTICAS -->
   <section class="stats-section">
     <div class="stats-container">
       {stats.length > 0 ? (
-        stats.map((s: any) => (
-          <div class="stat-item">
-            <div class="stat-number">{s.value}{s.suffix || ''}</div>
-            <div class="stat-label" data-es={s.label_es} data-en={s.label_en || s.label_es}>{s.label_es}</div>
-          </div>
-        ))
+        stats.map((s: any, i: number) => {
+          const icons = ['fas fa-globe-americas','fas fa-trophy','fas fa-users','fas fa-calendar-check'];
+          return (
+            <div class="stat-item">
+              <i class={`stat-icon ${icons[i % icons.length]}`}></i>
+              <div class="stat-number">{s.value}{s.suffix || ''}</div>
+              <div class="stat-label" data-es={s.label_es} data-en={s.label_en || s.label_es}>{s.label_es}</div>
+            </div>
+          );
+        })
       ) : (
         <>
           <div class="stat-item">
+            <i class="stat-icon fas fa-globe-americas"></i>
             <div class="stat-number">15+</div>
             <div class="stat-label" data-es="Países Miembros" data-en="Member Countries">Países Miembros</div>
           </div>
           <div class="stat-item">
+            <i class="stat-icon fas fa-trophy"></i>
             <div class="stat-number">6</div>
             <div class="stat-label" data-es="Mundiales Realizados" data-en="Championships Held">Mundiales Realizados</div>
           </div>
           <div class="stat-item">
+            <i class="stat-icon fas fa-users"></i>
             <div class="stat-number">2K+</div>
             <div class="stat-label" data-es="Jugadores Afiliados" data-en="Affiliated Players">Jugadores Afiliados</div>
           </div>
           <div class="stat-item">
+            <i class="stat-icon fas fa-calendar-check"></i>
             <div class="stat-number">5+</div>
             <div class="stat-label" data-es="Eventos Anuales" data-en="Annual Events">Eventos Anuales</div>
           </div>
@@ -1645,47 +1782,53 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
   <!-- 7. CONTACTO — siempre al final -->
   <section id="contacto" class="contact-section">
-    <h2 class="section-title" data-es="Contáctanos" data-en="Contact Us">Contáctanos</h2>
     <div class="contact-info">
-      <p data-es="¿Tienes alguna pregunta o comentario? Estamos aquí para ayudarte." data-en="Do you have any questions or comments? We are here to help you.">¿Tienes alguna pregunta o comentario? Estamos aquí para ayudarte.</p>
+      <h2 class="section-title" data-es="Contáctanos" data-en="Contact Us">Contáctanos</h2>
+      <p class="contact-intro" data-es="¿Tienes alguna pregunta o comentario? Nuestro equipo está listo para ayudarte." data-en="Do you have any questions? Our team is ready to help you.">¿Tienes alguna pregunta o comentario? Nuestro equipo está listo para ayudarte.</p>
       <div class="contact-details">
         <div class="contact-item">
-          <i class="fas fa-map-marker-alt contact-icon"></i>
+          <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
           <h4 data-es="Dirección" data-en="Address">Dirección</h4>
           <p data-es={contactData.address_es || ''} data-en={contactData.address_en || ''}>{contactData.address_es || '337 Pienwild Ct Orlando, FL 32828'}</p>
         </div>
         <div class="contact-item">
-          <i class="fas fa-phone contact-icon"></i>
+          <div class="contact-icon"><i class="fas fa-phone"></i></div>
           <h4 data-es="Teléfono" data-en="Phone">Teléfono</h4>
           <p>{contactData.phone || '+1 407-232-5635'}</p>
         </div>
         <div class="contact-item">
-          <i class="fas fa-envelope contact-icon"></i>
+          <div class="contact-icon"><i class="fas fa-envelope"></i></div>
           <h4 data-es="Email" data-en="Email">Email</h4>
           <p>{contactData.email || 'femundoinfo@gmail.com'}</p>
         </div>
       </div>
       <div class="social-links">
         {contactData.facebook_url && (
-          <a href={contactData.facebook_url} class="social-icon facebook" target="_blank" rel="noopener">
+          <a href={contactData.facebook_url} class="social-icon facebook" target="_blank" rel="noopener" aria-label="Facebook">
             <i class="fab fa-facebook-f"></i>
           </a>
         )}
         {contactData.instagram_url && (
-          <a href={contactData.instagram_url} class="social-icon instagram" target="_blank" rel="noopener">
+          <a href={contactData.instagram_url} class="social-icon instagram" target="_blank" rel="noopener" aria-label="Instagram">
             <i class="fab fa-instagram"></i>
           </a>
         )}
         {contactData.youtube_url && (
-          <a href={contactData.youtube_url} class="social-icon youtube" target="_blank" rel="noopener">
+          <a href={contactData.youtube_url} class="social-icon youtube" target="_blank" rel="noopener" aria-label="YouTube">
             <i class="fab fa-youtube"></i>
           </a>
         )}
         {contactData.whatsapp && (
-          <a href={`https://wa.me/${contactData.whatsapp.replace(/[^0-9]/g, '')}`} class="social-icon whatsapp" target="_blank" rel="noopener">
+          <a href={`https://wa.me/${contactData.whatsapp.replace(/[^0-9]/g, '')}`} class="social-icon whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp">
             <i class="fab fa-whatsapp"></i>
           </a>
         )}
+      </div>
+      <div style="margin-top: 2.5rem;">
+        <a href={`mailto:${contactData.email || 'femundoinfo@gmail.com'}`} class="cta-button" style="font-size:1rem; padding:1rem 2.5rem; display:inline-flex; align-items:center; gap:10px;">
+          <i class="fas fa-paper-plane"></i>
+          <span data-es="Enviar mensaje" data-en="Send message">Enviar mensaje</span>
+        </a>
       </div>
     </div>
   </section>
@@ -1767,13 +1910,13 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
       });
 
       // PRÓXIMOS EVENTOS - INSCRIPCIONES (dinámico desde data-attributes)
-      document.querySelectorAll('.upcoming-event').forEach(item => {
+      document.querySelectorAll('.upcoming-event[data-event]').forEach(item => {
         item.addEventListener('click', function() {
-          const registrationUrl = this.dataset.registrationUrl;
+          const registrationUrl = (this as HTMLElement).dataset.registrationUrl;
           if (registrationUrl) {
             window.location.href = registrationUrl;
           } else {
-            const eventKey = this.dataset.event;
+            const eventKey = (this as HTMLElement).dataset.event;
             window.location.href = `/registro?evento=${eventKey}`;
           }
         });
