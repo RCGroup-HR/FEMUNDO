@@ -1209,7 +1209,11 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 /* Stats Section */
 .stats-section {
-  background: linear-gradient(135deg, #0f2060 0%, #1e3a8a 50%, #1e40af 100%);
+  background:
+    radial-gradient(ellipse at 15% 50%, rgba(255,140,0,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 90%, rgba(255,140,0,0.10) 0%, transparent 45%),
+    linear-gradient(135deg, #0a1628 0%, #0f2060 35%, #1e3a8a 65%, #1a3580 100%);
   color: white;
   padding: 4rem 2rem;
   text-align: center;
@@ -1220,12 +1224,18 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 .stats-section::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -20%;
-  width: 60%;
-  height: 200%;
-  background: radial-gradient(ellipse, rgba(255,140,0,0.08) 0%, transparent 70%);
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 60%);
   pointer-events: none;
+}
+
+.stats-section::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,140,0,0.5), transparent);
 }
 
 .stats-container {
