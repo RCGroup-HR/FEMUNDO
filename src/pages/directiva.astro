@@ -320,6 +320,18 @@ const membersByCategory = categories.map((cat: any) => ({
             text-align: center;
             position: relative;
             animation: modalIn 0.3s ease;
+            border: 2px solid var(--secondary);
+        }
+
+        .modal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 20px 20px 0 0;
         }
 
         @keyframes modalIn {
