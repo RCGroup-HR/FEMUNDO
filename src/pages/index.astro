@@ -810,10 +810,16 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   height: 600px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  text-align: left;
+  justify-content: center;
+  text-align: center;
   color: white;
   overflow: hidden;
+}
+
+/* Cuando hay mini carrusel: texto se mueve a la izquierda */
+.hero-section.has-mini-carousel {
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .hero-image {
@@ -827,11 +833,19 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   z-index: -1;
 }
 
+/* Por defecto: centrado */
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 600px;
+  max-width: 700px;
   padding: 2rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Con carrusel: izquierda */
+.hero-section.has-mini-carousel .hero-content {
+  max-width: 600px;
   margin-right: auto;
   margin-left: 60px;
   text-align: left;
@@ -982,7 +996,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     width: 300px;
     right: 25px;
   }
-  .hero-content {
+  .hero-section.has-mini-carousel .hero-content {
     max-width: 550px;
   }
   .mini-carousel-track {
@@ -995,7 +1009,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     width: 260px;
     right: 20px;
   }
-  .hero-content {
+  .hero-section.has-mini-carousel .hero-content {
     max-width: 500px;
   }
   .mini-carousel-track {
@@ -1007,13 +1021,18 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   .hero-mini-carousel {
     display: none !important;
   }
-  .hero-content {
-    margin-left: 0;
-    max-width: 800px;
-    padding: 1.5rem;
-  }
   .hero-section {
     height: 500px;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  .hero-content,
+  .hero-section.has-mini-carousel .hero-content {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 90%;
+    padding: 1.5rem;
+    text-align: center !important;
   }
 }
 
@@ -1438,7 +1457,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   )}
 
   <!-- HERO -->
-  <section id="inicio" class="hero-section">
+  <section id="inicio" class={`hero-section${miniCarouselSlides.length > 0 ? ' has-mini-carousel' : ''}`}>
     <div class="hero-image"></div>
 
     <!-- MINI CAROUSEL EN HERO -->
