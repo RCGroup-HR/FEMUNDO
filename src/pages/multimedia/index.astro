@@ -34,27 +34,66 @@ const videoEmbedUrl = multimediaVideoUrl ? getYoutubeEmbedUrl(multimediaVideoUrl
   <Fragment slot="head">
     <style>
         .hero-multimedia {
-            background: var(--gradient);
+            background:
+                radial-gradient(ellipse at 15% 50%, rgba(255,140,0,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 90%, rgba(255,140,0,0.10) 0%, transparent 45%),
+                linear-gradient(135deg, #0a1628 0%, #0f2060 35%, #1e3a8a 65%, #1a3580 100%);
             color: white;
-            padding: 60px 20px;
+            padding: 80px 20px;
             text-align: center;
             min-height: 45vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-multimedia::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff8c00, transparent);
+        }
+
+        .hero-multimedia .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,140,0,0.2);
+            border: 1px solid rgba(255,140,0,0.4);
+            color: #ffb347;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-multimedia .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
         }
 
         .hero-multimedia .hero-content h1 {
-            font-size: clamp(1.8rem, 5vw, 3.5rem);
-            font-weight: 700;
+            font-size: clamp(2rem, 5vw, 3.8rem);
+            font-weight: 800;
             margin-bottom: 1rem;
-            line-height: 1.2;
+            line-height: 1.15;
             color: white;
+            letter-spacing: -0.5px;
         }
 
         .hero-multimedia .hero-content p {
-            font-size: clamp(1rem, 2.5vw, 1.3rem);
-            opacity: 0.95;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            opacity: 0.85;
+            max-width: 560px;
+            margin: 0 auto;
         }
 
         .multimedia-container {
@@ -80,8 +119,9 @@ const videoEmbedUrl = multimediaVideoUrl ? getYoutubeEmbedUrl(multimediaVideoUrl
 
         /* Gallery Albums Grid */
         .albums-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 25px;
             margin-bottom: 50px;
         }
@@ -94,6 +134,10 @@ const videoEmbedUrl = multimediaVideoUrl ? getYoutubeEmbedUrl(multimediaVideoUrl
             transition: all 0.3s ease;
             text-decoration: none;
             display: block;
+            width: 340px;
+            max-width: calc(100vw - 3rem);
+            flex-shrink: 0;
+            border: 1px solid rgba(30,58,138,0.06);
         }
 
         .album-card:hover {
@@ -212,21 +256,19 @@ const videoEmbedUrl = multimediaVideoUrl ? getYoutubeEmbedUrl(multimediaVideoUrl
             display: block;
         }
 
-        @media (max-width: 1024px) {
-            .albums-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
         @media (max-width: 768px) {
             .hero-multimedia {
-                padding: 40px 15px;
+                padding: 50px 15px;
                 min-height: 35vh;
             }
 
+            .album-card {
+                width: 100%;
+                max-width: 420px;
+            }
+
             .albums-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
+                gap: 18px;
             }
 
             .multimedia-container {
@@ -245,6 +287,7 @@ const videoEmbedUrl = multimediaVideoUrl ? getYoutubeEmbedUrl(multimediaVideoUrl
     <!-- Hero Section -->
     <section class="hero-multimedia">
         <div class="hero-content">
+            <div class="hero-badge"><i class="fas fa-photo-film"></i> <span data-es="Galería Oficial" data-en="Official Gallery">Galería Oficial</span></div>
             <h1 data-es="Multimedia" data-en="Multimedia">Multimedia</h1>
             <p data-es="Revive los mejores momentos de nuestros eventos internacionales de dominó" data-en="Relive the best moments of our international domino events">Revive los mejores momentos de nuestros eventos internacionales de dominó</p>
         </div>

@@ -57,8 +57,15 @@ const copyrightSection = getFooterSection('copyright');
   <meta name="description" content={description}>
   {ogImage && <meta property="og:image" content={ogImage} />}
   <link rel="icon" href="/icono.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Preconnect para reducir latencia de fuentes externas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <!-- Fuentes con display=swap para evitar FOIT (flash of invisible text) -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome: carga diferida para no bloquear render -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   <slot name="head" />
 </head>
 <body class={bodyClass}>
