@@ -171,8 +171,9 @@ const membersByCategory = categories.map((cat: any) => ({
 
         /* GRID DE MIEMBROS */
         .miembros-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 20px;
             margin: 20px 0;
         }
@@ -186,6 +187,9 @@ const membersByCategory = categories.map((cat: any) => ({
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            width: 280px;
+            max-width: calc(100vw - 3rem);
+            flex-shrink: 0;
         }
 
         .miembro-card-dir::before {
@@ -503,8 +507,12 @@ const membersByCategory = categories.map((cat: any) => ({
             }
 
             .miembros-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 gap: 15px;
+            }
+
+            .miembro-card-dir {
+                width: 100%;
+                max-width: 420px;
             }
         }
 
@@ -517,9 +525,8 @@ const membersByCategory = categories.map((cat: any) => ({
                 padding: 10px 8px;
             }
 
-            .miembros-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
+            .miembro-card-dir {
+                width: 100%;
             }
 
             .seccion-card {
