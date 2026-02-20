@@ -368,11 +368,12 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 /* UPCOMING EVENTS */
 .upcoming-events {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.5rem;
   margin: 2rem auto 0;
-  max-width: 860px;
+  max-width: 900px;
   width: 100%;
   padding: 0;
   box-sizing: border-box;
@@ -389,6 +390,9 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   display: flex;
   flex-direction: column;
   border: 2px solid rgba(30, 58, 138, 0.08);
+  width: 420px;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
 .upcoming-event-img-wrap {
@@ -498,27 +502,11 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
   gap: 5px;
 }
 
-@media (min-width: 1024px) {
-  .upcoming-events { gap: 1.5rem; max-width: 860px; }
-  .upcoming-event-img-wrap { height: 340px; }
-  .upcoming-event-title { font-size: 1.5rem; }
-}
-
 @media (max-width: 768px) {
-  .upcoming-events {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-    max-width: 440px;
-    padding: 0;
-  }
+  .upcoming-events { gap: 1rem; }
+  .upcoming-event { width: 100%; max-width: 440px; }
   .upcoming-event-img-wrap { height: 260px; }
   .upcoming-event-title { font-size: 1.2rem; }
-}
-
-@media (min-width: 769px) and (max-width: 1023px) {
-  .upcoming-events { grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 720px; }
-  .upcoming-event-img-wrap { height: 280px; }
-  .upcoming-event-title { font-size: 1.3rem; }
 }
 
 /* Media Queries Generales */
@@ -1073,15 +1061,16 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 .catalog-item {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 5px 20px rgba(30, 58, 138, 0.1);
+  box-shadow: 0 6px 24px rgba(30, 58, 138, 0.13);
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
   position: relative;
   border: 1px solid rgba(30,58,138,0.07);
-  max-width: 380px;
-  width: 100%;
+  width: 300px;
+  max-width: calc(100vw - 3rem);
+  flex-shrink: 0;
 }
 
 .catalog-item:hover {
@@ -1091,10 +1080,15 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 .catalog-item img {
   width: 100%;
-  height: 280px;
+  height: 220px;
   object-fit: cover;
   object-position: center;
-  transition: opacity 0.3s;
+  transition: transform 0.4s ease, opacity 0.3s;
+  display: block;
+}
+
+.catalog-item:hover img {
+  transform: scale(1.05);
 }
 
 .catalog-item:hover img {
@@ -1102,10 +1096,12 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 }
 
 .catalog-item h3 {
-  padding: 1.2rem;
-  font-size: 1.3rem;
+  padding: 1rem 1.2rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 700;
   text-align: center;
   color: var(--primary-dark);
+  line-height: 1.35;
 }
 
 .catalog-item .view-gallery {
@@ -1498,23 +1494,17 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
 
 /* Noticias grid */
 .noticias-grid-inner {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.5rem;
   width: 100%;
-  max-width: 960px;
+  max-width: 980px;
 }
 
-@media (max-width: 900px) {
-  .noticias-grid-inner {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 620px;
-  }
-}
 @media (max-width: 560px) {
   .noticias-grid-inner {
-    grid-template-columns: 1fr;
-    max-width: 400px;
+    gap: 1rem;
   }
 }
 
@@ -1649,8 +1639,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
     <section id="proximos-eventos" class="events-section" style="padding: 3rem 2rem; background: #f8fafc;">
       <h2 class="section-title" data-es="Próximos Eventos" data-en="Upcoming Events">Próximos Eventos</h2>
       <p style="text-align:center; color:#64748b; margin-top:-1rem; margin-bottom:2rem; font-size:1rem;" data-es="No te pierdas los torneos y campeonatos que se aproximan" data-en="Don't miss the upcoming tournaments and championships">No te pierdas los torneos y campeonatos que se aproximan</p>
-      <div style="display:flex; justify-content:center;">
-      <div class="upcoming-events" style="margin-top:0;">
+      <div class="upcoming-events">
         {upcomingEvents.map((ev: any) => {
           const daysLeft = ev.start_date ? Math.max(0, Math.ceil((new Date(ev.start_date).getTime() - Date.now()) / 86400000)) : null;
           return (
@@ -1678,7 +1667,6 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
             </div>
           );
         })}
-      </div>
       </div>
     </section>
   )}
@@ -1887,7 +1875,7 @@ const videoEmbedUrl = videoData.video_url ? getYoutubeEmbedUrl(videoData.video_u
             const imgHtml = a.hero_image_url
               ? '<img src="' + a.hero_image_url + '" alt="' + title + '" style="width:100%;height:200px;object-fit:cover;background:#e2e8f0;" loading="lazy" />'
               : '<div style="width:100%;height:200px;background:linear-gradient(135deg,#1e3a8a,#ff8c00);display:flex;align-items:center;justify-content:center;"><i class="fas fa-newspaper" style="font-size:3rem;color:rgba(255,255,255,0.4);"></i></div>';
-            return '<a href="/noticias/' + a.slug + '" style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'none\';this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.06)\'">'
+            return '<a href="/noticias/' + a.slug + '" style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;width:300px;max-width:calc(100vw - 3rem);flex-shrink:0;" onmouseover="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'none\';this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.06)\'">'
               + imgHtml
               + '<div style="padding:1.25rem;flex:1;display:flex;flex-direction:column;">'
               + (a.category ? '<span style="font-size:0.75rem;font-weight:600;color:#ff8c00;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">' + a.category + '</span>' : '')
