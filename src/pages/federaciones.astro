@@ -623,11 +623,11 @@ function getFlagUrl(code: string, width = 40): string {
 
                 let html = '<div class="fed-modal-header">';
                 if (fed.logo_url) {
-                    html += `<img src="${fed.logo_url}" alt="${name}" class="fed-modal-logo" />`;
+                    html += `<img src="${fed.logo_url}" alt="${name}" class="fed-modal-logo" style="width:80px;height:80px;object-fit:contain;border-radius:12px;background:#f8fafc;padding:6px;border:2px solid #e2e8f0;flex-shrink:0;" />`;
                 }
                 const fUrl = flagUrl(fed.country_flag, 80);
                 if (fUrl) {
-                    html += `<img src="${fUrl}" alt="${fed.country || ''}" class="fed-modal-flag-img" />`;
+                    html += `<img src="${fUrl}" alt="${fed.country || ''}" class="fed-modal-flag-img" style="width:64px;height:48px;object-fit:cover;border-radius:6px;border:2px solid #e2e8f0;flex-shrink:0;" />`;
                 } else {
                     html += `<span class="fed-modal-flag">🌐</span>`;
                 }
