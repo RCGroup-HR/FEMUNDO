@@ -82,17 +82,18 @@ export default function ImageUploader({ label, value, onChange, category = 'gene
       <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{label}</label>
 
       {preview ? (
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+        <div style={{ position: 'relative', display: 'block', maxWidth: '300px', width: '100%' }}>
           <img
             src={preview}
             alt="Preview"
             style={{
               width: '100%',
-              maxWidth: '300px',
               height: '160px',
-              objectFit: 'cover',
+              objectFit: 'contain',
               borderRadius: '8px',
               border: '2px solid #e2e8f0',
+              background: '#f8fafc',
+              display: 'block',
             }}
           />
           <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
@@ -132,6 +133,7 @@ export default function ImageUploader({ label, value, onChange, category = 'gene
           style={{
             width: '100%',
             maxWidth: '300px',
+            display: 'block',
             height: '120px',
             border: '2px dashed #cbd5e1',
             borderRadius: '8px',
