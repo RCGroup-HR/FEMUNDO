@@ -133,7 +133,6 @@ export default function ImageUploader({ label, value, onChange, category = 'gene
           style={{
             width: '100%',
             maxWidth: '300px',
-            display: 'block',
             height: '120px',
             border: '2px dashed #cbd5e1',
             borderRadius: '8px',
