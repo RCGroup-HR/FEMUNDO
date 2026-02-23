@@ -13,6 +13,12 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
+
+// Guard: si no hay post válido (e.g. slug de bot/scanner), devolver 404
+if (!post?.data) {
+	return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+
 const { Content } = await render(post);
 ---
 

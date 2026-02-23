@@ -4,14 +4,17 @@ interface Props {
 }
 
 const { date } = Astro.props;
+const safeDate = date instanceof Date ? date : date ? new Date(date) : null;
 ---
 
-<time datetime={date.toISOString()}>
-	{
-		date.toLocaleDateString('en-us', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-		})
-	}
-</time>
+{safeDate && (
+	<time datetime={safeDate.toISOString()}>
+		{
+			safeDate.toLocaleDateString('en-us', {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+			})
+		}
+	</time>
+)}

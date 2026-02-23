@@ -4,9 +4,6 @@ import { defineMiddleware } from 'astro:middleware';
 const ALLOWED_ORIGINS = [
   'https://femundo.org',
   'https://www.femundo.org',
-  // IP del VPS para pruebas mientras el DNS no apunta al servidor
-  'https://38.242.218.24',
-  'http://38.242.218.24',
 ];
 
 // En desarrollo también permitimos localhost
