@@ -47,21 +47,15 @@ export const POST: APIRoute = async ({ request }) => {
     return errorResponse('Email inválido', 400);
   }
 
-  // Validación de complejidad de contraseña
-  if (password.length < 12) {
-    return errorResponse('El password debe tener al menos 12 caracteres', 400);
+  // Validación de contraseña
+  if (password.length < 8) {
+    return errorResponse('El password debe tener al menos 8 caracteres', 400);
   }
-  if (!/[A-Z]/.test(password)) {
-    return errorResponse('El password debe contener al menos una letra mayúscula', 400);
-  }
-  if (!/[a-z]/.test(password)) {
-    return errorResponse('El password debe contener al menos una letra minúscula', 400);
+  if (!/[A-Za-z]/.test(password)) {
+    return errorResponse('El password debe contener al menos una letra', 400);
   }
   if (!/[0-9]/.test(password)) {
     return errorResponse('El password debe contener al menos un número', 400);
-  }
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return errorResponse('El password debe contener al menos un carácter especial (!@#$%^&*...)', 400);
   }
 
   if (username && !/^[a-z0-9._-]{3,50}$/.test(username)) {

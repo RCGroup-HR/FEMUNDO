@@ -32,21 +32,15 @@ export const PUT: APIRoute = async ({ request }) => {
     return errorResponse('Password actual y nuevo son requeridos', 400);
   }
 
-  // Validación de complejidad de contraseña
-  if (newPassword.length < 12) {
-    return errorResponse('El nuevo password debe tener al menos 12 caracteres', 400);
+  // Validación de contraseña
+  if (newPassword.length < 8) {
+    return errorResponse('El nuevo password debe tener al menos 8 caracteres', 400);
   }
-  if (!/[A-Z]/.test(newPassword)) {
-    return errorResponse('El password debe contener al menos una letra mayúscula', 400);
-  }
-  if (!/[a-z]/.test(newPassword)) {
-    return errorResponse('El password debe contener al menos una letra minúscula', 400);
+  if (!/[A-Za-z]/.test(newPassword)) {
+    return errorResponse('El password debe contener al menos una letra', 400);
   }
   if (!/[0-9]/.test(newPassword)) {
     return errorResponse('El password debe contener al menos un número', 400);
-  }
-  if (!/[^A-Za-z0-9]/.test(newPassword)) {
-    return errorResponse('El password debe contener al menos un carácter especial (!@#$%^&*...)', 400);
   }
   if (newPassword === currentPassword) {
     return errorResponse('El nuevo password debe ser diferente al actual', 400);
